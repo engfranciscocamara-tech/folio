@@ -1,0 +1,3720 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folio — Conversor Universal de Documentos</title>
+  <meta name="description" content="Converta PDF, EPUB, DOCX, Markdown, HTML, RTF e TXT diretamente no navegador. 100% local, gratuito, com extração de imagens e reflow tipográfico inteligente." />
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Folio — Conversor Universal de Documentos" />
+  <meta property="og:description" content="Converta PDF para EPUB, DOCX, Markdown, HTML, RTF e TXT direto no navegador — 100% privado, sem enviar seus arquivos para servidores." />
+  <meta property="og:url" content="https://engfranciscocamara-tech.github.io/folio/" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230071e3'/%3E%3Cpath d='M10 12h12M18 8l4 4-4 4M22 20H10M14 16l-4 4 4 4' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Motores Client-Side (100% no navegador, sem enviar arquivos para servidores) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* =========================================================================
+       APPLE-INSPIRED DESIGN SYSTEM (macOS Sequoia / Liquid Glass / Editorial)
+       ========================================================================= */
+    :root {
+      --bg: #f5f5f7;
+      --bg-hero-glow: radial-gradient(ellipse 80% 55% at 50% -10%, rgba(0, 113, 227, 0.12), transparent 68%),
+                      radial-gradient(ellipse 50% 40% at 80% 10%, rgba(175, 82, 222, 0.08), transparent 60%);
+      --surface: #ffffff;
+      --surface-elevated: rgba(255, 255, 255, 0.84);
+      --surface-subtle: #f5f5f7;
+      --surface-hover: #ececf0;
+      --glass-nav: rgba(251, 251, 253, 0.78);
+      --glass-card: rgba(255, 255, 255, 0.72);
+      --border: rgba(0, 0, 0, 0.075);
+      --border-strong: rgba(0, 0, 0, 0.13);
+      --text-primary: #1d1d1f;
+      --text-secondary: #424245;
+      --text-muted: #6e6e73;
+      --text-tertiary: #86868b;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --accent-soft: rgba(0, 113, 227, 0.10);
+      --accent-ring: rgba(0, 113, 227, 0.28);
+      --green: #34c759;
+      --green-text: #1b7f37;
+      --green-soft: rgba(52, 199, 89, 0.13);
+      --orange: #ff9500;
+      --orange-text: #a35a00;
+      --orange-soft: rgba(255, 149, 0, 0.14);
+      --red: #ff3b30;
+      --red-soft: rgba(255, 59, 48, 0.12);
+      --code-bg: #161618;
+      --code-text: #e5e5ea;
+      --segment-bg: rgba(118, 118, 128, 0.12);
+      --segment-active: #ffffff;
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.07), 0 4px 16px rgba(0, 0, 0, 0.03);
+      --radius-pill: 980px;
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+      --font-mono: "SF Mono", ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+      --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --bg-hero-glow: radial-gradient(ellipse 80% 55% at 50% -10%, rgba(10, 132, 255, 0.22), transparent 68%),
+                      radial-gradient(ellipse 50% 40% at 80% 10%, rgba(191, 90, 242, 0.14), transparent 60%);
+      --surface: #1c1c1e;
+      --surface-elevated: rgba(28, 28, 30, 0.85);
+      --surface-subtle: #2c2c2e;
+      --surface-hover: #3a3a3c;
+      --glass-nav: rgba(22, 22, 24, 0.76);
+      --glass-card: rgba(28, 28, 30, 0.72);
+      --border: rgba(255, 255, 255, 0.095);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text-primary: #f5f5f7;
+      --text-secondary: #d1d1d6;
+      --text-muted: #98989d;
+      --text-tertiary: #6e6e73;
+      --accent: #0a84ff;
+      --accent-hover: #409cff;
+      --accent-soft: rgba(10, 132, 255, 0.16);
+      --accent-ring: rgba(10, 132, 255, 0.36);
+      --green: #30d158;
+      --green-text: #30d158;
+      --green-soft: rgba(48, 209, 88, 0.16);
+      --orange: #ff9f0a;
+      --orange-text: #ff9f0a;
+      --orange-soft: rgba(255, 159, 10, 0.16);
+      --red: #ff453a;
+      --red-soft: rgba(255, 69, 58, 0.16);
+      --code-bg: #0d0d0f;
+      --code-text: #e5e5ea;
+      --segment-bg: rgba(118, 118, 128, 0.24);
+      --segment-active: #3a3a3c;
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --shadow-sm: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 30px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      background-image: var(--bg-hero-glow);
+      background-repeat: no-repeat;
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      transition: background-color 0.25s var(--ease-apple), color 0.25s var(--ease-apple);
+    }
+
+    svg { display: block; flex-shrink: 0; }
+
+    /* =========================================================================
+       FROSTED GLASS TOP NAVIGATION
+       ========================================================================= */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--glass-nav);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+    @media (max-width: 820px) {
+      .topbar-inner {
+        grid-template-columns: 1fr auto;
+        row-gap: 10px;
+      }
+      .nav-segmented { grid-column: 1 / -1; justify-self: center; order: 3; }
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .brand-squircle {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #1f1f24 0%, #09090b 100%);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+    [data-theme="dark"] .brand-squircle {
+      background: linear-gradient(180deg, #0a84ff 0%, #0066cc 100%);
+    }
+
+    /* macOS Segmented Control */
+    .nav-segmented {
+      display: inline-flex;
+      align-items: center;
+      background: var(--segment-bg);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      gap: 2px;
+    }
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-apple);
+    }
+    .nav-tab:hover { color: var(--text-primary); }
+    .nav-tab.active {
+      background: var(--segment-active);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .engine-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 5px 12px 5px 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-xs);
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background: var(--green);
+      box-shadow: 0 0 0 3px var(--green-soft);
+      display: inline-block;
+    }
+    .dot.py { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .engine-select {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      outline: none;
+    }
+    .engine-select option { background: var(--surface); color: var(--text-primary); }
+
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-xs);
+      transition: all 0.2s var(--ease-apple);
+    }
+    .theme-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
+
+    /* =========================================================================
+       EDITORIAL APPLE HERO
+       ========================================================================= */
+    .hero {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 24px 28px;
+      text-align: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 13px;
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-xs);
+      margin-bottom: 20px;
+    }
+    .eyebrow svg { color: var(--accent); }
+
+    .hero h1 {
+      font-size: clamp(36px, 5.4vw, 58px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.06;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .hero h1 .muted-grad {
+      background: linear-gradient(135deg, var(--accent) 0%, #5856d6 55%, #af52de 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      font-weight: 400;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 30px;
+      letter-spacing: -0.012em;
+      line-height: 1.5;
+    }
+
+    /* Liquid Glass Format Switcher Capsule */
+    .format-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 22px;
+      background: var(--glass-card);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .fmt-slot {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 15px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s var(--ease-apple);
+    }
+    .fmt-slot:hover { border-color: var(--border-strong); }
+    .fmt-slot-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-subtle);
+      color: var(--text-primary);
+    }
+    .fmt-slot.target .fmt-slot-icon {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .fmt-slot-meta { text-align: left; }
+    .fmt-slot-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      line-height: 1.1;
+    }
+    .fmt-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      padding-right: 18px;
+      cursor: pointer;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0 center;
+    }
+    .fmt-select option { background: var(--surface); color: var(--text-primary); }
+
+    .swap-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 9999px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-apple);
+    }
+    .swap-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: rotate(180deg);
+    }
+
+    /* =========================================================================
+       MAIN WORKSPACE CONTAINER & BENTO CARDS
+       ========================================================================= */
+    .main-container {
+      max-width: 980px;
+      margin: 0 auto 80px;
+      padding: 0 20px;
+    }
+
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      margin-bottom: 24px;
+      transition: background-color 0.25s, border-color 0.25s;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 1.5px dashed var(--border-strong);
+      border-radius: 20px;
+      padding: 36px 24px;
+      text-align: center;
+      background: var(--surface-subtle);
+      cursor: pointer;
+      transition: all 0.22s var(--ease-apple);
+    }
+    .dropzone:hover {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--surface-subtle) 85%, var(--accent) 4%);
+    }
+    .dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 4px var(--accent-ring);
+      transform: scale(1.005);
+    }
+    .drop-squircle {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 18px;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .dropzone h2 {
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      margin-bottom: 6px;
+    }
+    .dropzone p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* Apple Pill Buttons */
+    .btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      font-family: var(--font-sans);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s var(--ease-apple);
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 113, 227, 0.28);
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-0.5px); }
+    .btn-primary:active { transform: scale(0.985); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-tinted {
+      background: var(--surface);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+    .btn-tinted:hover { background: var(--surface-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent);
+      padding: 8px 14px;
+    }
+    .btn-ghost:hover { background: var(--accent-soft); }
+
+    .btn-success {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(52, 199, 89, 0.25);
+    }
+    .btn-success:hover { filter: brightness(0.95); }
+
+    .btn-sm { padding: 7px 14px; font-size: 13px; }
+    .btn-icon-only {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 9999px;
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      border: 1px solid transparent;
+    }
+    .btn-icon-only:hover { color: var(--red); background: var(--red-soft); }
+
+    /* Options Bar & macOS Grouped Settings Panel */
+    .options-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .options-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .options-panel {
+      margin-top: 18px;
+      display: none;
+      animation: fadeSlide 0.22s var(--ease-apple);
+    }
+    .options-panel.open { display: block; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .settings-section-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      margin: 0 0 8px 6px;
+    }
+    .settings-group {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .opt-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .opt-field input[type="text"],
+    .opt-field select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: var(--font-sans);
+      background: var(--surface);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .opt-field input[type="text"]:focus,
+    .opt-field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+
+    /* Apple iOS/macOS Switch List */
+    .switch-list {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px) { .switch-list { grid-template-columns: 1fr; } }
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .switch-row:hover { background: var(--surface-hover); }
+    .switch-text strong {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .switch-text small {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* Genuine Apple Pill Toggle Switch */
+    .apple-switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .apple-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .apple-slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: rgba(120, 120, 128, 0.28);
+      transition: background 0.22s var(--ease-apple);
+    }
+    .apple-slider::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 2px;
+      top: 2px;
+      border-radius: 9999px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18), 0 0 1px rgba(0, 0, 0, 0.12);
+      transition: transform 0.22s var(--ease-apple);
+    }
+    .apple-switch input:checked + .apple-slider { background: var(--green); }
+    .apple-switch input:checked + .apple-slider::before { transform: translateX(18px); }
+
+    /* =========================================================================
+       CONVERSION QUEUE (macOS Finder Transfer Cards)
+       ========================================================================= */
+    .queue-section { margin-top: 24px; display: none; }
+    .queue-section.has-items { display: block; }
+    .queue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .queue-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .queue-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .job-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: all 0.18s var(--ease-apple);
+    }
+    .job-row.selected {
+      background: var(--surface);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    @media (max-width: 720px) {
+      .job-row { grid-template-columns: auto 1fr; }
+    }
+    .job-badge-sq {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--accent);
+      box-shadow: var(--shadow-xs);
+    }
+    .job-info { min-width: 0; cursor: pointer; }
+    .job-name {
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .job-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .job-target-select {
+      padding: 6px 24px 6px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-strong);
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 12.5px;
+      background: var(--surface);
+      color: var(--text-primary);
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      cursor: pointer;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 11px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+    .status-ready { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
+    .status-working { background: var(--orange-soft); color: var(--orange-text); }
+    .status-done { background: var(--green-soft); color: var(--green-text); }
+    .status-error { background: var(--red-soft); color: var(--red); }
+
+    /* =========================================================================
+       LIVE INSPECTOR (Apple Books Preview + Xcode Console)
+       ========================================================================= */
+    .inspector-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .inspector-card.visible { display: block; animation: fadeSlide 0.25s var(--ease-apple); }
+    .inspector-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-subtle);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .window-dots {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .window-dots span {
+      width: 11px;
+      height: 11px;
+      border-radius: 9999px;
+      display: inline-block;
+    }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .insp-segmented {
+      display: inline-flex;
+      background: var(--segment-bg);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      gap: 2px;
+    }
+    .insp-tab {
+      background: transparent;
+      border: none;
+      padding: 5px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s var(--ease-apple);
+    }
+    .insp-tab.active {
+      background: var(--segment-active);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .inspector-body {
+      padding: 22px;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+
+    /* Apple-Style Live Progress Dock */
+    .progress-dock {
+      padding: 16px 22px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .progress-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+      flex-wrap: wrap;
+    }
+    .progress-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .progress-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background: var(--accent);
+      display: none;
+      flex-shrink: 0;
+      animation: pulseRing 1.4s infinite ease-in-out;
+    }
+    .progress-dock.working .progress-pulse { display: inline-block; }
+    .progress-dock.done .progress-pulse { display: inline-block; background: var(--green); animation: none; }
+    .progress-dock.error .progress-pulse { display: inline-block; background: var(--red); animation: none; }
+    @keyframes pulseRing {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.8); }
+    }
+    .progress-metrics {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .progress-pct {
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 38px;
+      text-align: right;
+    }
+    .progress-track {
+      position: relative;
+      width: 100%;
+      height: 7px;
+      border-radius: var(--radius-pill);
+      background: var(--segment-bg);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(90deg, var(--accent) 0%, #5856d6 100%);
+      transition: width 0.22s var(--ease-apple), background 0.3s;
+      position: relative;
+    }
+    .progress-dock.working .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+      animation: shimmerSlide 1.3s infinite linear;
+    }
+    @keyframes shimmerSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .progress-dock.done .progress-fill {
+      background: var(--green);
+    }
+    .progress-dock.error .progress-fill {
+      background: var(--red);
+    }
+    .progress-stages {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .stage-chip {
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-subtle);
+      color: var(--text-tertiary);
+      border: 1px solid var(--border);
+      transition: all 0.2s var(--ease-apple);
+    }
+    .stage-chip.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent-ring);
+    }
+    .stage-chip.done {
+      background: var(--green-soft);
+      color: var(--green-text);
+      border-color: transparent;
+    }
+
+    /* Mini progress bar inside Queue Row */
+    .job-mini-track {
+      width: 100%;
+      height: 4px;
+      border-radius: 9999px;
+      background: var(--segment-bg);
+      margin-top: 6px;
+      overflow: hidden;
+      display: none;
+    }
+    .job-mini-track.visible { display: block; }
+    .job-mini-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 9999px;
+      background: var(--accent);
+      transition: width 0.2s var(--ease-apple);
+    }
+    .job-mini-fill.done { background: var(--green); }
+    .job-mini-fill.error { background: var(--red); }
+    .pipeline-log {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 18px 20px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .preview-ebook {
+      max-width: 640px;
+      margin: 6px auto;
+      padding: 28px 34px;
+      background: #fbfaf6;
+      color: #1d1d1f;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      font-family: "New York", Georgia, "Times New Roman", serif;
+      line-height: 1.8;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    [data-theme="dark"] .preview-ebook {
+      background: #141416;
+      color: #e5e5ea;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .preview-ebook h1 { font-size: 24px; margin: 16px 0 10px; letter-spacing: -0.02em; }
+    .preview-ebook h2 { font-size: 19px; margin: 14px 0 8px; }
+    .preview-ebook h2.subtitle { font-size: 17px; font-weight: 400; font-style: italic; color: var(--text-muted); margin-top: 2px; margin-bottom: 18px; }
+    .preview-ebook .centered { text-align: center; text-indent: 0; }
+    .preview-ebook p { margin-bottom: 13px; text-align: justify; font-size: 15.5px; text-indent: 1.2em; }
+    .preview-ebook h1 + p, .preview-ebook h2 + p, .preview-ebook figure + p { text-indent: 0; }
+    .preview-ebook figure { margin: 18px auto; text-align: center; }
+    .preview-ebook img { max-width: 100%; max-height: 360px; width: auto; height: auto; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+    /* =========================================================================
+       BENTO INFO CARDS, MATRIX & ARCHITECTURE VIEWS
+       ========================================================================= */
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeSlide 0.25s var(--ease-apple); }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .bento-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 760px) {
+      .bento-grid, .bento-grid.cols-3 { grid-template-columns: 1fr; }
+    }
+
+    .info-bento {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.22s var(--ease-apple), box-shadow 0.22s var(--ease-apple);
+    }
+    .info-bento:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .bento-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .bento-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+    }
+    .info-bento h3 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .info-bento .sub-tag {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+    .info-bento p, .info-bento li {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .info-bento ul { padding-left: 18px; margin-top: 8px; }
+    .info-bento li { margin-bottom: 4px; }
+    .info-bento code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--surface-subtle);
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: var(--text-primary);
+    }
+
+    /* Matrix Table */
+    .matrix-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-top: 18px;
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--surface);
+    }
+    .matrix-table th, .matrix-table td {
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .matrix-table tr:last-child td, .matrix-table tr:last-child th { border-bottom: none; }
+    .matrix-table th:last-child, .matrix-table td:last-child { border-right: none; }
+    .matrix-table th {
+      background: var(--surface-subtle);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+    .cell-ok {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .cell-ok:hover { background: var(--accent-soft); }
+    .cell-self { color: var(--text-tertiary); background: var(--surface-subtle); }
+
+    /* Architecture Steps */
+    .arch-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 22px 0 26px;
+    }
+    @media (max-width: 820px) { .arch-steps { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .arch-steps { grid-template-columns: 1fr; } }
+    .arch-step {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .arch-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .arch-step h4 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin: 6px 0;
+    }
+    .arch-step p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+    footer {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12.5px;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Frosted Glass Navigation -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-squircle" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="M9 15h6"/>
+            <path d="m12 12 3 3-3 3"/>
+          </svg>
+        </div>
+        <span>Folio</span>
+      </div>
+
+      <nav class="nav-segmented" aria-label="Navegação principal">
+        <button class="nav-tab active" data-view="converter">Conversor</button>
+        <button class="nav-tab" data-view="matrix">Matriz</button>
+        <button class="nav-tab" data-view="architecture">Arquitetura</button>
+      </nav>
+
+      <div class="topbar-right">
+        <div class="engine-pill" id="enginePill" title="Processamento 100% local no seu navegador">
+          <span class="dot" id="engineDot"></span>
+          <span id="engineStaticLabel" style="display:none;color:var(--text-primary);font-weight:500">100% Local</span>
+          <select id="engineMode" class="engine-select" aria-label="Selecionar motor">
+            <option value="browser">JS Local</option>
+            <option value="python" id="optPythonEngine" disabled>Python PyMuPDF (offline)</option>
+          </select>
+        </div>
+        <button class="theme-btn" id="themeToggleBtn" type="button" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Editorial Apple Hero -->
+  <section class="hero">
+    <div class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span>100% no seu dispositivo · Zero upload para nuvem</span>
+    </div>
+
+    <h1 id="heroTitle">PDF para <span class="muted-grad">EPUB.</span></h1>
+    <p class="hero-sub">
+      Conversão tipográfica universal entre <strong>PDF, EPUB, DOCX, Markdown, HTML, RTF e TXT</strong> — com reflow inteligente e inspeção completa do pipeline.
+    </p>
+
+    <!-- Liquid Glass Format Capsule -->
+    <div class="format-capsule">
+      <div class="fmt-slot">
+        <div class="fmt-slot-icon" id="srcIcon"></div>
+        <div class="fmt-slot-meta">
+          <div class="fmt-slot-label">Origem</div>
+          <select id="globalSource" class="fmt-select" aria-label="Formato de origem">
+            <option value="pdf" selected>PDF</option>
+            <option value="epub">EPUB</option>
+            <option value="docx">DOCX</option>
+            <option value="md">Markdown</option>
+            <option value="html">HTML</option>
+            <option value="rtf">RTF</option>
+            <option value="txt">TXT</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="swap-btn" id="swapFormatsBtn" type="button" title="Inverter formatos" aria-label="Inverter formatos">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m16 3 4 4-4 4"/><path d="M20 7H4"/>
+          <path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>
+        </svg>
+      </button>
+
+      <div class="fmt-slot target">
+        <div class="fmt-slot-icon" id="dstIcon"></div>
+        <div class="fmt-slot-meta">
+          <div class="fmt-slot-label">Destino</div>
+          <select id="globalTarget" class="fmt-select" aria-label="Formato de destino">
+            <option value="epub" selected>EPUB</option>
+            <option value="pdf">PDF</option>
+            <option value="docx">DOCX</option>
+            <option value="md">Markdown</option>
+            <option value="html">HTML</option>
+            <option value="rtf">RTF</option>
+            <option value="txt">TXT</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+
+    <!-- VIEW 1: CONVERSOR -->
+    <div id="view-converter" class="view-section active">
+      <div class="bento-card">
+        <div class="dropzone" id="dropzone">
+          <div class="drop-squircle" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <h2>Solte seus documentos aqui</h2>
+          <p>Compatível com PDF, EPUB, DOCX, Markdown, HTML, RTF e TXT · Múltiplos arquivos</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="pickFilesBtn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Selecionar Arquivos
+            </button>
+            <button class="btn btn-tinted" id="loadSampleBtn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Testar com PDF
+            </button>
+            <button class="btn btn-tinted" id="loadMdSampleBtn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+              Testar com Markdown
+            </button>
+          </div>
+          <input type="file" id="fileInput" multiple accept=".pdf,.epub,.docx,.md,.markdown,.html,.htm,.rtf,.txt" style="display:none" />
+        </div>
+
+        <!-- Options Toggle Bar -->
+        <div class="options-bar">
+          <div class="options-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span>Heurísticas de reflow, remoção de cabeçalhos e divisão de capítulos ativas por padrão.</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="toggleOptionsBtn" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            Ajustes Avançados
+          </button>
+        </div>
+
+        <!-- macOS-Style Grouped Preferences -->
+        <div class="options-panel" id="optionsPanel">
+          <div class="settings-section-title">Metadados e Tipografia</div>
+          <div class="settings-group">
+            <div class="options-grid">
+              <div class="opt-field">
+                <label for="optTitle">Título</label>
+                <input type="text" id="optTitle" placeholder="Automático do documento" />
+              </div>
+              <div class="opt-field">
+                <label for="optAuthor">Autor</label>
+                <input type="text" id="optAuthor" placeholder="Ex.: Machado de Assis" />
+              </div>
+              <div class="opt-field">
+                <label for="optLang">Idioma</label>
+                <select id="optLang">
+                  <option value="pt-BR" selected>Português (Brasil)</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+              <div class="opt-field">
+                <label for="optFont">Estilo Tipográfico</label>
+                <select id="optFont">
+                  <option value="serif" selected>Serifada (Leitura / Kindle)</option>
+                  <option value="sans">Sans-serif (SF / Moderna)</option>
+                  <option value="mono">Monoespaçada (Técnica)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section-title">Heurísticas de Reflow (PDF → EPUB)</div>
+          <div class="switch-list">
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Juntar linhas quebradas</strong>
+                <small>Reconstrói parágrafos contínuos a partir do PDF</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optUnwrap" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Remover hifenização</strong>
+                <small>Une palavras quebradas no fim da linha</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optDehyphen" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Limpar cabeçalhos e rodapés</strong>
+                <small>Remove números de página e textos repetidos</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optStripHF" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Detectar títulos e capítulos</strong>
+                <small>Usa tamanho mediano de fonte para criar o sumário</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optDetectHeadings" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Dividir em capítulos XHTML</strong>
+                <small>Melhora a navegação no Kindle, Kobo e Apple Books</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optSplitChapters" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Extrair imagens e figuras</strong>
+                <small>Captura fotos, gráficos e diagramas na posição exata do texto</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optExtractImages" checked /><span class="apple-slider"></span></span>
+            </label>
+            <label class="switch-row">
+              <span class="switch-text">
+                <strong>Capa automática no EPUB</strong>
+                <small>Usa a capa do PDF ou gera uma capa tipográfica limpa</small>
+              </span>
+              <span class="apple-switch"><input type="checkbox" id="optGenCover" checked /><span class="apple-slider"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- File Queue -->
+        <div class="queue-section" id="queueSection">
+          <div class="queue-header">
+            <h3>Fila de Conversão · <span id="queueCount">0</span></h3>
+            <div class="btn-row">
+              <button class="btn btn-tinted btn-sm" id="clearQueueBtn" type="button">Limpar</button>
+              <button class="btn btn-primary btn-sm" id="convertAllBtn" type="button">Converter Tudo</button>
+            </div>
+          </div>
+          <div class="queue-list" id="queueList"></div>
+        </div>
+      </div>
+
+      <!-- Live Inspector (macOS Window) -->
+      <div class="inspector-card" id="inspectorCard">
+        <div class="inspector-header">
+          <div class="window-dots" aria-hidden="true">
+            <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+          </div>
+          <div class="insp-segmented">
+            <button class="insp-tab active" data-itab="log">Pipeline</button>
+            <button class="insp-tab" data-itab="preview">Prévia de Leitura</button>
+            <button class="insp-tab" data-itab="ast">IR Canônico</button>
+          </div>
+          <div style="width: 48px;"></div>
+        </div>
+        <div class="progress-dock" id="progressDock">
+          <div class="progress-top">
+            <div class="progress-label">
+              <span class="progress-pulse" aria-hidden="true"></span>
+              <span id="progDetail">Aguardando início da conversão…</span>
+            </div>
+            <div class="progress-metrics">
+              <span id="progEta"></span>
+              <span class="progress-pct" id="progPct">0%</span>
+            </div>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progTrack">
+            <div class="progress-fill" id="progFill"></div>
+          </div>
+          <div class="progress-stages" id="progStages">
+            <span class="stage-chip" data-stage="1">1. Leitura</span>
+            <span class="stage-chip" data-stage="2">2. Reflow</span>
+            <span class="stage-chip" data-stage="3">3. IR Canônico</span>
+            <span class="stage-chip" data-stage="4">4. Empacotamento</span>
+          </div>
+        </div>
+        <div class="inspector-body" id="inspectorBody"></div>
+      </div>
+
+      <!-- Dynamic Pair Bento Cards -->
+      <div class="bento-grid" id="formatInfoCards"></div>
+    </div>
+
+    <!-- VIEW 2: MATRIZ DE FORMATOS -->
+    <div id="view-matrix" class="view-section">
+      <div class="bento-card">
+        <h2 style="font-size:24px; letter-spacing:-0.03em; margin-bottom:6px;">42 conversões. Um único núcleo.</h2>
+        <p style="font-size:14.5px; color:var(--text-muted);">
+          Selecione qualquer célula para configurar imediatamente o par <strong>Origem → Destino</strong> no conversor.
+          Todos os formatos convergem para a mesma <strong>Representação Intermediária (IR)</strong>.
+        </p>
+        <div class="matrix-wrap">
+          <table class="matrix-table" id="matrixTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: ARQUITETURA -->
+    <div id="view-architecture" class="view-section">
+      <div class="bento-card">
+        <h2 style="font-size:24px; letter-spacing:-0.03em; margin-bottom:8px;">Como o CloudConvert funciona por dentro</h2>
+        <p style="font-size:15px; color:var(--text-muted); max-width:740px;">
+          Em vez de escrever dezenas de conversores isolados, plataformas profissionais orquestram motores especializados
+          em um pipeline de 4 estágios — exatamente a mesma arquitetura implementada neste aplicativo.
+        </p>
+
+        <div class="arch-steps">
+          <div class="arch-step">
+            <div class="arch-num">01 · Parser</div>
+            <h4>Leitura</h4>
+            <p>Decodifica coordenadas tipográficas do PDF, XML do DOCX ou o spine XHTML de um EPUB.</p>
+          </div>
+          <div class="arch-step">
+            <div class="arch-num">02 · Heurística</div>
+            <h4>Reflow</h4>
+            <p>Calcula a fonte mediana do corpo, detecta capítulos, une linhas quebradas e limpa rodapés.</p>
+          </div>
+          <div class="arch-step">
+            <div class="arch-num">03 · IR Canônico</div>
+            <h4>Modelo Único</h4>
+            <p>Normaliza tudo para metadados + capítulos semânticos. 7 leitores + 7 escritores = 42 pares.</p>
+          </div>
+          <div class="arch-step">
+            <div class="arch-num">04 · Writer</div>
+            <h4>Empacotamento</h4>
+            <p>Gera EPUB 3 + NCX válido (mimetype sem compressão), OOXML DOCX, PDF vetorial ou Markdown.</p>
+          </div>
+        </div>
+
+        <div class="bento-grid cols-3">
+          <div class="info-bento">
+            <div class="bento-kicker">
+              <div class="bento-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+              </div>
+              <h3>Motores no CloudConvert</h3>
+            </div>
+            <ul>
+              <li><strong>PDF ⇄ EPUB:</strong> <code>Calibre</code> com heurísticas de reflow.</li>
+              <li><strong>Office → PDF:</strong> <code>LibreOffice</code> headless.</li>
+              <li><strong>Markup:</strong> <code>Pandoc</code> (AST universal).</li>
+              <li><strong>PDF/OCR:</strong> <code>MuPDF</code>, <code>Poppler</code> e <code>Tesseract</code>.</li>
+            </ul>
+          </div>
+
+          <div class="info-bento">
+            <div class="bento-kicker">
+              <div class="bento-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <h3>Motores neste HTML</h3>
+            </div>
+            <ul>
+              <li><strong>PDF:</strong> <code>PDF.js</code> + reflow tipográfico + <code>jsPDF</code>.</li>
+              <li><strong>EPUB 3:</strong> <code>JSZip</code> + gerador nativo OPF/NAV/NCX.</li>
+              <li><strong>DOCX:</strong> <code>Mammoth.js</code> + gerador OOXML nativo.</li>
+              <li><strong>MD / HTML / RTF:</strong> <code>Marked</code>, <code>Turndown</code> e RTF PT-BR.</li>
+            </ul>
+          </div>
+
+          <div class="info-bento">
+            <div class="bento-kicker">
+              <div class="bento-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+              <h3>Motor Python Local</h3>
+            </div>
+            <p>Para PDFs pesados ou extração de capa da página 1 com <code>PyMuPDF</code>:</p>
+            <div class="pipeline-log" style="margin-top:10px;padding:10px 12px;font-size:11.5px">python converter_local.py livro.pdf livro.epub
+python converter_local.py --serve</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>Folio · Conversor Universal de Documentos</span>
+    <span>Processamento 100% local · Privado por design</span>
+  </footer>
+
+<script>
+/* ============================================================================
+   ÍCONES SVG MINIMALISTAS (ESTILO SF SYMBOLS)
+   ============================================================================ */
+const SVG_ICONS = {
+  pdf:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>`,
+  epub: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>`,
+  docx: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>`,
+  md:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15V9l2.5 3L12 9v6"/><path d="M17 9v6"/><path d="m15 13 2 2 2-2"/></svg>`,
+  html: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  rtf:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>`,
+  txt:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>`,
+  sun:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+  moon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+  dl:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  x:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+};
+
+const FORMATS = {
+  pdf:  { label: 'PDF',      short: 'PDF',  mime: 'application/pdf', desc: 'Portable Document Format — layout fixo por coordenadas (X, Y). Excelente para impressão, mas exige heurísticas tipográficas de reflow para se adaptar a leitores digitais.' },
+  epub: { label: 'EPUB',     short: 'EPUB', mime: 'application/epub+zip', desc: 'Electronic Publication (W3C/IDPF) — pacote ZIP com capítulos em XHTML estrito, CSS, metadados OPF e sumário NAV/NCX. Ideal para Apple Books, Kindle e Kobo.' },
+  docx: { label: 'DOCX',     short: 'DOCX', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', desc: 'Office Open XML — estrutura semântica editável compatível com Pages, Microsoft Word, LibreOffice e Google Docs.' },
+  md:   { label: 'Markdown', short: 'MD',   mime: 'text/markdown;charset=utf-8', desc: 'Texto plano com marcação semântica leve (# títulos, **negrito**, listas). Formato padrão para escrita técnica e pipelines Pandoc.' },
+  html: { label: 'HTML',     short: 'HTML', mime: 'text/html;charset=utf-8', desc: 'HyperText Markup Language — documento web autônomo e responsivo com sumário automático embutido.' },
+  rtf:  { label: 'RTF',      short: 'RTF',  mime: 'application/rtf', desc: 'Rich Text Format — formato universal compatível com TextEdit, Word e editores clássicos, com suporte completo a acentuação PT-BR.' },
+  txt:  { label: 'TXT',      short: 'TXT',  mime: 'text/plain;charset=utf-8', desc: 'Texto Puro UTF-8 — universal, leve e livre de formatação visual, ideal para arquivamento e leitura simples.' }
+};
+
+const FORMAT_KEYS = Object.keys(FORMATS);
+
+const state = {
+  jobs: [],
+  activeJobId: null,
+  activeInspTab: 'log',
+  pythonServerAvailable: false,
+  pythonServerUrl: 'http://127.0.0.1:5055'
+};
+
+if (window.pdfjsLib) {
+  if (location.protocol === 'file:') {
+    window.PDFJS_DISABLE_WORKER = true;
+  } else {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    window.PDFJS_DISABLE_WORKER = false;
+  }
+}
+
+/* ============================================================================
+   TEMA CLARO / ESCURO (AUTO + TOGGLE)
+   ============================================================================ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggleBtn').innerHTML = theme === 'dark' ? SVG_ICONS.sun : SVG_ICONS.moon;
+  try { localStorage.setItem('folio-theme', theme); } catch (_) {}
+}
+
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('folio-theme'); } catch (_) {}
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+})();
+
+document.getElementById('themeToggleBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+/* ============================================================================
+   UTILITÁRIOS DE XML / HTML / TEXTO
+   ============================================================================ */
+function escapeXml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function detectFormatFromName(filename) {
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  if (ext === 'markdown') return 'md';
+  if (ext === 'htm') return 'html';
+  return FORMATS[ext] ? ext : 'txt';
+}
+
+function stripExt(filename) {
+  return filename.replace(/\.[^.]+$/, '');
+}
+
+function getOptions() {
+  return {
+    title: document.getElementById('optTitle').value.trim(),
+    author: document.getElementById('optAuthor').value.trim(),
+    lang: document.getElementById('optLang').value,
+    font: document.getElementById('optFont').value,
+    unwrap: document.getElementById('optUnwrap').checked,
+    dehyphen: document.getElementById('optDehyphen').checked,
+    stripHF: document.getElementById('optStripHF').checked,
+    detectHeadings: document.getElementById('optDetectHeadings').checked,
+    splitChapters: document.getElementById('optSplitChapters').checked,
+    extractImages: document.getElementById('optExtractImages').checked,
+    genCover: document.getElementById('optGenCover').checked
+  };
+}
+
+function htmlToStrictXhtml(htmlFragment) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${htmlFragment}</body></html>`, 'text/html');
+  doc.querySelectorAll('script, style, iframe, object').forEach(el => el.remove());
+  doc.querySelectorAll('[data-img-id]').forEach(el => el.removeAttribute('data-img-id'));
+  doc.querySelectorAll('[data-page]').forEach(el => el.removeAttribute('data-page'));
+
+  const serializer = new XMLSerializer();
+  let xhtml = '';
+  for (const child of doc.body.childNodes) {
+    xhtml += serializer.serializeToString(child);
+  }
+  xhtml = xhtml.replace(/\s+xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+  xhtml = xhtml.replace(/&nbsp;/g, '&#160;');
+  return xhtml;
+}
+
+function inlineImagesForBrowser(html, images) {
+  if (!images || !images.length) return html;
+  const byId = new Map(images.map(img => [img.id, img]));
+  const byPath = new Map(images.map(img => [`images/${img.filename}`, img]));
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  doc.querySelectorAll('img').forEach(el => {
+    const id = el.getAttribute('data-img-id');
+    const src = el.getAttribute('src') || '';
+    const found = (id && byId.get(id)) || byPath.get(src);
+    if (found && found.dataUrl) el.setAttribute('src', found.dataUrl);
+  });
+  return doc.body.innerHTML;
+}
+
+function htmlToBlocks(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  const blocks = [];
+
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const txt = node.textContent.replace(/\s+/g, ' ').trim();
+      if (txt) blocks.push({ type: 'p', text: txt, runs: [{ text: txt }] });
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = node.tagName.toLowerCase();
+
+    if (tag === 'img') {
+      blocks.push({
+        type: 'img',
+        imgId: node.getAttribute('data-img-id') || '',
+        src: node.getAttribute('src') || '',
+        alt: node.getAttribute('alt') || 'Imagem'
+      });
+    } else if (tag === 'figure') {
+      const img = node.querySelector('img');
+      if (img) walk(img);
+      const cap = node.querySelector('figcaption');
+      if (cap && cap.textContent.trim()) {
+        blocks.push({ type: 'blockquote', text: cap.textContent.trim(), runs: [{ text: cap.textContent.trim(), italic: true }] });
+      }
+    } else if (/^h[1-6]$/.test(tag)) {
+      const text = node.textContent.replace(/\s+/g, ' ').trim();
+      if (text) blocks.push({ type: tag, text, runs: extractRuns(node) });
+    } else if (tag === 'p' || tag === 'blockquote' || tag === 'pre') {
+      const imgs = node.querySelectorAll('img');
+      imgs.forEach(im => walk(im));
+      const text = tag === 'pre' ? node.textContent : node.textContent.replace(/\s+/g, ' ').trim();
+      if (text) blocks.push({ type: tag, text, runs: extractRuns(node) });
+    } else if (tag === 'li') {
+      const text = node.textContent.replace(/\s+/g, ' ').trim();
+      if (text) blocks.push({ type: 'li', text, runs: extractRuns(node) });
+    } else if (tag === 'table') {
+      node.querySelectorAll('tr').forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll('th, td')).map(c => c.textContent.trim());
+        const line = cells.join(' | ');
+        if (line.trim()) blocks.push({ type: 'p', text: line, runs: [{ text: line }] });
+      });
+    } else if (tag === 'hr') {
+      blocks.push({ type: 'hr', text: '---', runs: [] });
+    } else {
+      for (const child of node.childNodes) walk(child);
+    }
+  }
+
+  function extractRuns(el, style = {}) {
+    const runs = [];
+    for (const child of el.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const t = child.textContent;
+        if (t) runs.push({ text: t, bold: !!style.bold, italic: !!style.italic, code: !!style.code });
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const tag = child.tagName.toLowerCase();
+        if (tag === 'br') {
+          runs.push({ text: '\n', bold: !!style.bold, italic: !!style.italic });
+        } else if (tag !== 'img') {
+          const next = {
+            bold: style.bold || tag === 'strong' || tag === 'b',
+            italic: style.italic || tag === 'em' || tag === 'i',
+            code: style.code || tag === 'code'
+          };
+          runs.push(...extractRuns(child, next));
+        }
+      }
+    }
+    return runs;
+  }
+
+  for (const child of doc.body.childNodes) walk(child);
+  return blocks;
+}
+
+function splitHtmlIntoChapters(html, fallbackTitle, splitEnabled) {
+  if (!splitEnabled) {
+    return [{ id: 'chap_1', title: fallbackTitle || 'Documento', html }];
+  }
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  const nodes = Array.from(doc.body.childNodes);
+
+  const hasH1 = doc.body.querySelectorAll('h1').length >= 2;
+  const hasH2 = !hasH1 && doc.body.querySelectorAll('h2').length >= 2;
+  const splitTag = hasH1 ? 'H1' : (hasH2 ? 'H2' : null);
+
+  if (!splitTag) {
+    const firstHeading = doc.body.querySelector('h1, h2');
+    return [{
+      id: 'chap_1',
+      title: firstHeading ? firstHeading.textContent.trim() : (fallbackTitle || 'Documento'),
+      html
+    }];
+  }
+
+  const chapters = [];
+  let currentTitle = fallbackTitle || 'Introdução';
+  let currentNodes = [];
+
+  function chunkHasSubstantialContent(list) {
+    // Só permite abrir novo capítulo se o capítulo atual já tiver corpo (<p>/<img>) ou texto substancial,
+    // evitando quebrar títulos de 2 linhas ("Capítulo 1" + "O Gancho") ou folhas de rosto ("New Spring" + "by Robert Jordan")!
+    let bodyChars = 0;
+    let hasImage = false;
+    let lastPage = null;
+    for (const n of list) {
+      if (n.nodeType !== Node.ELEMENT_NODE) continue;
+      const t = n.tagName;
+      if (n.getAttribute('data-page')) lastPage = n.getAttribute('data-page');
+      if (t === 'IMG' || t === 'FIGURE' || (n.querySelector && n.querySelector('img'))) hasImage = true;
+      if (!/^H[1-6]$/.test(t)) {
+        bodyChars += (n.textContent || '').trim().length;
+      }
+    }
+    return { bodyChars, hasImage, lastPage };
+  }
+
+  for (const node of nodes) {
+    if (node.nodeType === Node.ELEMENT_NODE && node.tagName === splitTag) {
+      const stats = chunkHasSubstantialContent(currentNodes);
+      const nodePage = node.getAttribute('data-page');
+      const hasPageInfo = !!(stats.lastPage && nodePage);
+      const samePageAsPrev = hasPageInfo && stats.lastPage === nodePage;
+      const differentPage = hasPageInfo && stats.lastPage !== nodePage;
+      const onlyHeadingsSoFar = stats.bodyChars < 25 && !stats.hasImage;
+
+      // Em PDFs: dois títulos na MESMA página sem corpo entre eles ficam juntos (ex.: "New Spring" + "by Robert Jordan", ou "Chapter 1" + subtítulo).
+      // Ao mudar de página do PDF, inicia novo capítulo normalmente (mesmo após uma folha de rosto só com texto).
+      const shouldSplit = currentNodes.length > 0 && (
+        differentPage ||
+        (!samePageAsPrev && !onlyHeadingsSoFar) ||
+        (samePageAsPrev && stats.bodyChars >= 80)
+      );
+
+      if (shouldSplit) {
+        const chunkHtml = currentNodes.map(n => n.outerHTML || escapeXml(n.textContent)).join('\n');
+        if (chunkHtml.replace(/<[^>]+>/g, '').trim().length > 0 || /<img\b/i.test(chunkHtml)) {
+          chapters.push({ id: `chap_${chapters.length + 1}`, title: currentTitle, html: chunkHtml });
+        }
+        currentTitle = node.textContent.trim() || `Capítulo ${chapters.length + 1}`;
+        currentNodes = [node];
+      } else {
+        if (currentNodes.length === 0) {
+          currentTitle = node.textContent.trim() || currentTitle;
+        }
+        currentNodes.push(node);
+      }
+    } else {
+      currentNodes.push(node);
+    }
+  }
+  if (currentNodes.length > 0) {
+    const chunkHtml = currentNodes.map(n => n.outerHTML || escapeXml(n.textContent)).join('\n');
+    if (chunkHtml.replace(/<[^>]+>/g, '').trim().length > 0 || /<img\b/i.test(chunkHtml)) {
+      chapters.push({ id: `chap_${chapters.length + 1}`, title: currentTitle, html: chunkHtml });
+    }
+  }
+  return chapters.length ? chapters : [{ id: 'chap_1', title: fallbackTitle || 'Documento', html }];
+}
+
+/* ============================================================================
+   HELPERS DE MATRIZ / IMAGENS / ESTATÍSTICA PARA PDF.JS
+   ============================================================================ */
+function mulMat(m1, m2) {
+  return [
+    m1[0] * m2[0] + m1[2] * m2[1],
+    m1[1] * m2[0] + m1[3] * m2[1],
+    m1[0] * m2[2] + m1[2] * m2[3],
+    m1[1] * m2[2] + m1[3] * m2[3],
+    m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+    m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+  ];
+}
+
+function applyMat(m, x, y) {
+  return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
+}
+
+function percentile(sortedArr, p) {
+  if (!sortedArr.length) return 0;
+  const idx = Math.min(sortedArr.length - 1, Math.max(0, Math.floor(sortedArr.length * p)));
+  return sortedArr[idx];
+}
+
+/**
+ * Une retângulos de imagem que se sobrepõem ou encostam (PDFs que fatiam fotos em tiras).
+ */
+function mergeAdjacentRects(rects, pad = 4) {
+  const list = rects.map(r => ({ ...r }));
+  let merged = true;
+  while (merged) {
+    merged = false;
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j];
+        const overlapX = a.x0 <= b.x1 + pad && b.x0 <= a.x1 + pad;
+        const overlapY = a.y0 <= b.y1 + pad && b.y0 <= a.y1 + pad;
+        if (overlapX && overlapY) {
+          a.x0 = Math.min(a.x0, b.x0);
+          a.y0 = Math.min(a.y0, b.y0);
+          a.x1 = Math.max(a.x1, b.x1);
+          a.y1 = Math.max(a.y1, b.y1);
+          list.splice(j, 1);
+          merged = true;
+          break;
+        }
+      }
+      if (merged) break;
+    }
+  }
+  return list;
+}
+
+/**
+ * Verifica se um recorte de canvas tem variação visual real (descarta retângulos brancos/lisos).
+ */
+function isBlankCanvas(ctx, w, h) {
+  const stepX = Math.max(1, Math.floor(w / 24));
+  const stepY = Math.max(1, Math.floor(h / 24));
+  const data = ctx.getImageData(0, 0, w, h).data;
+  let r0 = data[0], g0 = data[1], b0 = data[2], diffs = 0, total = 0;
+  for (let y = 0; y < h; y += stepY) {
+    for (let x = 0; x < w; x += stepX) {
+      const idx = (y * w + x) * 4;
+      total++;
+      if (Math.abs(data[idx] - r0) + Math.abs(data[idx + 1] - g0) + Math.abs(data[idx + 2] - b0) > 22) {
+        diffs++;
+      }
+    }
+  }
+  return total > 0 && (diffs / total) < 0.015;
+}
+
+/**
+ * Extrai figuras reais da página PDF usando OperatorList (CTM) + recorte fiel do canvas renderizado.
+ * Isso lida perfeitamente com CMYK, máscaras alpha (SMask), rotação e gráficos compostos!
+ */
+async function extractPageImages(page, pageNum, pageW, pageH, textCharCount, imageCounterRef) {
+  const OPS = window.pdfjsLib.OPS;
+  const opList = await page.getOperatorList();
+  const imgOps = new Set([
+    OPS.paintImageXObject,
+    OPS.paintJpegXObject,
+    OPS.paintInlineImageXObject,
+    OPS.paintImageXObjectRepeat,
+    OPS.paintInlineImageXObjectGroup
+  ].filter(v => v !== undefined));
+
+  let ctm = [1, 0, 0, 1, 0, 0];
+  const stack = [];
+  const rawRects = [];
+
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    const fn = opList.fnArray[i];
+    const args = opList.argsArray[i];
+    if (fn === OPS.save) {
+      stack.push(ctm.slice());
+    } else if (fn === OPS.restore) {
+      ctm = stack.length ? stack.pop() : [1, 0, 0, 1, 0, 0];
+    } else if (fn === OPS.transform && args && args.length === 6) {
+      ctm = mulMat(ctm, args);
+    } else if (imgOps.has(fn)) {
+      const corners = [
+        applyMat(ctm, 0, 0),
+        applyMat(ctm, 1, 0),
+        applyMat(ctm, 0, 1),
+        applyMat(ctm, 1, 1)
+      ];
+      const xs = corners.map(c => c[0]);
+      const ys = corners.map(c => c[1]);
+      const x0 = Math.max(0, Math.min(...xs));
+      const x1 = Math.min(pageW, Math.max(...xs));
+      const y0 = Math.max(0, Math.min(...ys));
+      const y1 = Math.min(pageH, Math.max(...ys));
+      const w = x1 - x0;
+      const h = y1 - y0;
+
+      // Descarta ícones/linhas minúsculas (< 38pt)
+      if (w < 38 || h < 38) continue;
+      // Descarta marca d'água/fundo de página inteira se a página tiver texto normal
+      const coversPage = (w > pageW * 0.92 && h > pageH * 0.92);
+      if (coversPage && textCharCount > 80) continue;
+
+      rawRects.push({ x0, y0, x1, y1 });
+    }
+  }
+
+  // Fallback para página escaneada (quase sem texto mas sem XObject padrão)
+  if (!rawRects.length && textCharCount < 25) {
+    rawRects.push({ x0: 0, y0: 0, x1: pageW, y1: pageH, isFullPageScan: true });
+  }
+  if (!rawRects.length) return [];
+
+  const mergedRects = mergeAdjacentRects(rawRects, 5);
+
+  // Renderiza a página uma única vez em alta nitidez (1.75x) para recortar cada figura
+  const scale = 1.75;
+  const vp = page.getViewport({ scale });
+  const pageCanvas = document.createElement('canvas');
+  pageCanvas.width = Math.max(1, Math.round(vp.width));
+  pageCanvas.height = Math.max(1, Math.round(vp.height));
+  const pCtx = pageCanvas.getContext('2d', { willReadFrequently: true });
+  pCtx.fillStyle = '#ffffff';
+  pCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+  await page.render({ canvasContext: pCtx, viewport: vp }).promise;
+
+  const extracted = [];
+  for (const r of mergedRects) {
+    const c1 = applyMat(vp.transform, r.x0, r.y0);
+    const c2 = applyMat(vp.transform, r.x1, r.y1);
+    const px0 = Math.max(0, Math.floor(Math.min(c1[0], c2[0])));
+    const py0 = Math.max(0, Math.floor(Math.min(c1[1], c2[1])));
+    const px1 = Math.min(pageCanvas.width, Math.ceil(Math.max(c1[0], c2[0])));
+    const py1 = Math.min(pageCanvas.height, Math.ceil(Math.max(c1[1], c2[1])));
+    const cw = px1 - px0;
+    const ch = py1 - py0;
+    if (cw < 48 || ch < 48) continue;
+
+    // Redimensiona se gigante (> 1400px) para manter EPUB rápido e leve
+    const maxDim = 1400;
+    const ratio = Math.min(1, maxDim / Math.max(cw, ch));
+    const outW = Math.max(1, Math.round(cw * ratio));
+    const outH = Math.max(1, Math.round(ch * ratio));
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = outW;
+    cropCanvas.height = outH;
+    const cCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+    cCtx.fillStyle = '#ffffff';
+    cCtx.fillRect(0, 0, outW, outH);
+    cCtx.drawImage(pageCanvas, px0, py0, cw, ch, 0, 0, outW, outH);
+
+    if (isBlankCanvas(cCtx, outW, outH)) continue;
+
+    const dataUrl = cropCanvas.toDataURL('image/jpeg', 0.88);
+    const base64 = dataUrl.split(',')[1];
+    imageCounterRef.count++;
+    const id = `img_${String(imageCounterRef.count).padStart(3, '0')}`;
+    const filename = `${id}.jpg`;
+
+    // yTop em coordenadas de leitura (0 = topo da página)
+    const yTop = pageH - r.y1;
+    const yBottom = pageH - r.y0;
+    extracted.push({
+      id, filename, mime: 'image/jpeg', base64, dataUrl,
+      width: outW, height: outH,
+      page: pageNum, yTop, yBottom,
+      x0: r.x0, x1: r.x1,
+      areaRatio: ((r.x1 - r.x0) * (r.y1 - r.y0)) / (pageW * pageH),
+      alt: `Figura ${imageCounterRef.count} (Página ${pageNum})`
+    });
+  }
+
+  return extracted;
+}
+
+/**
+ * Detecta se a página possui layout de 2 colunas e ordena os blocos na ordem correta de leitura.
+ */
+function orderLinesByColumns(lines, pageW) {
+  if (lines.length < 8) return lines.map(l => ({ ...l, col: 0 }));
+  const mid = pageW / 2;
+  const left = [], right = [], span = [];
+  for (const l of lines) {
+    if (l.xEnd <= mid + 8) left.push(l);
+    else if (l.xStart >= mid - 8) right.push(l);
+    else span.push(l);
+  }
+  // Considera 2 colunas se houver >= 4 linhas em cada lado e poucos itens cruzando o centro
+  if (left.length >= 4 && right.length >= 4 && span.length <= Math.max(3, lines.length * 0.22)) {
+    const colTopY = Math.min(left[0].yTop, right[0].yTop);
+    const colBotY = Math.max(left[left.length - 1].yTop, right[right.length - 1].yTop);
+    const topSpan = span.filter(l => l.yTop < colTopY).map(l => ({ ...l, col: 0 }));
+    const botSpan = span.filter(l => l.yTop > colBotY).map(l => ({ ...l, col: 0 }));
+    const midSpan = span.filter(l => l.yTop >= colTopY && l.yTop <= colBotY).map(l => ({ ...l, col: 0 }));
+    return [
+      ...topSpan,
+      ...left.map(l => ({ ...l, col: 1 })),
+      ...right.map(l => ({ ...l, col: 2 })),
+      ...midSpan,
+      ...botSpan
+    ];
+  }
+  return lines.map(l => ({ ...l, col: 0 }));
+}
+
+/* ============================================================================
+   PARSERS (STAGE 1 & 2) -> IR CANÔNICO
+   ============================================================================ */
+async function parsePdfToIR(arrayBuffer, filename, opts, log, onProgress) {
+  const report = onProgress || (() => {});
+  report(2, 1, 'Carregando estrutura do PDF…');
+  log('STAGE 1 [PDF.js]: Carregando documento PDF...');
+  const loadParams = { data: new Uint8Array(arrayBuffer) };
+  if (window.PDFJS_DISABLE_WORKER) loadParams.disableWorker = true;
+
+  const pdf = await window.pdfjsLib.getDocument(loadParams).promise;
+  const metaObj = await pdf.getMetadata().catch(() => ({ info: {} }));
+  const pdfInfo = (metaObj && metaObj.info) || {};
+  const numPages = pdf.numPages;
+  log(`STAGE 1 [PDF.js]: ${numPages} página(s). Extraindo tipografia, geometria e imagens...`);
+  report(5, 1, `Lendo páginas (0 / ${numPages})…`);
+
+  const pagesData = [];
+  const allFontSizes = [];
+  const allImages = [];
+  const imageCounterRef = { count: 0 };
+  let coverImage = null;
+  let lastYield = performance.now();
+
+  for (let p = 1; p <= numPages; p++) {
+    const page = await pdf.getPage(p);
+    const viewport = page.getViewport({ scale: 1.0 });
+    const pageW = viewport.width;
+    const pageH = viewport.height;
+    const textContent = await page.getTextContent();
+
+    // Monta linhas visuais preservando runs (bold / italic) e coordenadas exatas xStart / xEnd
+    const linesMap = [];
+    let pageCharCount = 0;
+
+    for (const item of textContent.items) {
+      const str = item.str;
+      if (!str || !str.trim()) continue;
+      pageCharCount += str.trim().length;
+      const tx = item.transform;
+      const fontSize = Math.round(Math.hypot(tx[0], tx[1]) * 10) / 10 || Math.abs(tx[3]) || 11;
+      const x = tx[4];
+      const y = tx[5];
+      const width = Math.abs(item.width || 0) || (str.length * fontSize * 0.48);
+      const isBold = /bold|black|heavy|demi|semibold/i.test(item.fontName || '');
+      const isItalic = /italic|oblique|slant/i.test(item.fontName || '');
+      allFontSizes.push(fontSize);
+
+      let targetLine = linesMap.find(l => Math.abs(l.y - y) <= Math.max(2.2, fontSize * 0.32));
+      if (!targetLine) {
+        targetLine = { y, items: [], maxFont: fontSize };
+        linesMap.push(targetLine);
+      }
+      targetLine.items.push({ x, width, str, fontSize, isBold, isItalic });
+      if (fontSize > targetLine.maxFont) targetLine.maxFont = fontSize;
+    }
+
+    // Ordena de cima para baixo (em PDF, Y maior = mais alto)
+    linesMap.sort((a, b) => b.y - a.y);
+
+    const rawLines = linesMap.map(line => {
+      line.items.sort((a, b) => a.x - b.x);
+      let plain = '';
+      let htmlRuns = '';
+      let prevEnd = null;
+      let boldChars = 0, italicChars = 0, totalChars = 0;
+
+      for (const it of line.items) {
+        const needsSpace = prevEnd !== null && (it.x - prevEnd) > it.fontSize * 0.20 && !plain.endsWith(' ') && !it.str.startsWith(' ');
+        const prefix = needsSpace ? ' ' : '';
+        plain += prefix + it.str;
+
+        let chunk = escapeXml(it.str);
+        if (it.isBold && it.isItalic) chunk = `<strong><em>${chunk}</em></strong>`;
+        else if (it.isBold) chunk = `<strong>${chunk}</strong>`;
+        else if (it.isItalic) chunk = `<em>${chunk}</em>`;
+        htmlRuns += prefix + chunk;
+
+        prevEnd = it.x + it.width;
+        const len = it.str.trim().length;
+        totalChars += len;
+        if (it.isBold) boldChars += len;
+        if (it.isItalic) italicChars += len;
+      }
+
+      const xStart = line.items[0].x;
+      const lastIt = line.items[line.items.length - 1];
+      const xEnd = lastIt.x + lastIt.width;
+      const yTop = pageH - line.y;
+      const text = plain.replace(/\s+/g, ' ').trim();
+      const html = htmlRuns
+        .replace(/<\/strong>(\s*)<strong>/g, '$1')
+        .replace(/<\/em>(\s*)<em>/g, '$1')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      return {
+        kind: 'line',
+        page: p,
+        y: line.y,
+        yTop,
+        normY: yTop / pageH,
+        xStart,
+        xEnd,
+        width: Math.max(0, xEnd - xStart),
+        pageW,
+        fontSize: line.maxFont,
+        isBold: totalChars > 0 && (boldChars / totalChars) > 0.72,
+        isItalic: totalChars > 0 && (italicChars / totalChars) > 0.72,
+        text,
+        html
+      };
+    }).filter(l => l.text.length > 0);
+
+    const orderedLines = orderLinesByColumns(rawLines, pageW);
+
+    // Extrai imagens reais da página
+    let pageImages = [];
+    if (opts.extractImages) {
+      try {
+        pageImages = await extractPageImages(page, p, pageW, pageH, pageCharCount, imageCounterRef);
+        // Se a página 1 tiver uma imagem grande de capa (> 40% da área), guarda como capa real do EPUB
+        if (p === 1 && !coverImage && pageImages.length && pageImages[0].areaRatio > 0.40) {
+          coverImage = pageImages[0];
+        }
+        allImages.push(...pageImages);
+      } catch (imgErr) {
+        log(`Aviso [Página ${p}]: falha ao extrair imagem (${imgErr.message})`);
+      }
+    }
+
+    pagesData.push({ pageNum: p, pageW, pageH, lines: orderedLines, images: pageImages });
+    // Libera memória de cada página imediatamente (essencial para PDFs grandes de 40+ MB!)
+    if (typeof page.cleanup === 'function') page.cleanup();
+
+    const now = performance.now();
+    if (p === numPages || (now - lastYield) >= 70) {
+      const pct = 5 + (p / numPages) * 60;
+      report(pct, 1, `Lendo página ${p.toLocaleString('pt-BR')} de ${numPages.toLocaleString('pt-BR')} (${allImages.length} img)…`);
+      lastYield = now;
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  // STAGE 2: Estatísticas reais do documento (fonte, entrelinha, margens)
+  report(68, 2, 'Analisando fontes, margens e entrelinha real…');
+  await new Promise(r => setTimeout(r, 0));
+  allFontSizes.sort((a, b) => a - b);
+  const medianFont = allFontSizes.length ? percentile(allFontSizes, 0.5) : 11;
+
+  // Mede a entrelinha real (leading) e as margens reais das linhas de corpo do texto
+  const leadings = [];
+  const bodyXStarts = [];
+  const bodyXEnds = [];
+  for (const pd of pagesData) {
+    let prev = null;
+    for (const l of pd.lines) {
+      const isBodySize = Math.abs(l.fontSize - medianFont) <= Math.max(1.2, medianFont * 0.14);
+      if (isBodySize && l.normY > 0.08 && l.normY < 0.92 && l.text.length > 20) {
+        bodyXStarts.push(l.xStart);
+        bodyXEnds.push(l.xEnd);
+        if (prev && prev.col === l.col) {
+          const dy = l.yTop - prev.yTop;
+          if (dy >= medianFont * 0.75 && dy <= medianFont * 2.35) {
+            leadings.push(dy);
+          }
+        }
+        prev = l;
+      } else {
+        prev = null;
+      }
+    }
+  }
+  leadings.sort((a, b) => a - b);
+  bodyXStarts.sort((a, b) => a - b);
+  bodyXEnds.sort((a, b) => a - b);
+
+  const medianLeading = leadings.length ? percentile(leadings, 0.5) : medianFont * 1.32;
+  const globalLeftMargin = bodyXStarts.length ? percentile(bodyXStarts, 0.20) : 50;
+  const globalRightMargin = bodyXEnds.length ? percentile(bodyXEnds, 0.85) : 520;
+  const globalLineWidth = Math.max(120, globalRightMargin - globalLeftMargin);
+
+  log(`STAGE 2 [Geometria]: Fonte=${medianFont.toFixed(1)}pt · Entrelinha=${medianLeading.toFixed(1)}pt · Margens=[${globalLeftMargin.toFixed(0)}..${globalRightMargin.toFixed(0)}] · ${allImages.length} imagem(ns) extraída(s).`);
+
+  // Detectar cabeçalhos/rodapés repetidos entre páginas
+  const repeatedEdgeTexts = new Set();
+  if (opts.stripHF && numPages >= 3) {
+    const freq = new Map();
+    for (const pd of pagesData) {
+      const seen = new Set();
+      for (const l of pd.lines) {
+        if (l.normY < 0.095 || l.normY > 0.905) {
+          const key = l.text.replace(/\d+/g, '#').trim().toLowerCase();
+          if (key.length > 0 && key.length < 95 && !seen.has(key)) {
+            seen.add(key);
+            freq.set(key, (freq.get(key) || 0) + 1);
+          }
+        }
+      }
+    }
+    for (const [key, count] of freq.entries()) {
+      if (count >= Math.max(2, Math.floor(numPages * 0.35))) repeatedEdgeTexts.add(key);
+    }
+    if (repeatedEdgeTexts.size > 0) {
+      log(`STAGE 2 [Limpeza]: ${repeatedEdgeTexts.size} padrão(ões) de cabeçalho/rodapé repetido(s) removido(s).`);
+    }
+  }
+
+  // Reconstrução inteligente de parágrafos + intercalação exata de imagens
+  const htmlParts = [];
+  let currentParaText = '';
+  let currentParaHtml = '';
+  let prevLine = null;
+  let removedLines = 0;
+  let headingCount = 0;
+  let paraCount = 0;
+
+  function flushPara() {
+    if (currentParaHtml.trim()) {
+      htmlParts.push(`<p>${currentParaHtml.trim()}</p>`);
+      paraCount++;
+      currentParaText = '';
+      currentParaHtml = '';
+    }
+  }
+
+  const chapterRegex = /^(cap[ií]tulo|chapter|parte|part|se[çc][ãa]o|pr[oó]logo|ep[ií]logo|pref[áa]cio|introdu[çc][ãa]o|conclus[ãa]o|ap[êe]ndice|sum[aá]rio)\b/i;
+  const dialogueRegex = /^[—–―]\s*\S|^-\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ"“«]/;
+  const bulletRegex = /^([•●▪◦‣\*]|\d{1,3}[.)]|[a-z][)])\s+/;
+  const terminalPunctRegex = /[.!?:»”"…)\]]$/;
+
+  for (const pd of pagesData) {
+    // Calcula margens locais da coluna/página para precisão máxima em páginas com margens alternadas (par/ímpar!)
+    const colMargins = {};
+    for (const colId of [0, 1, 2]) {
+      const colLines = pd.lines.filter(l => l.col === colId && Math.abs(l.fontSize - medianFont) <= 1.5 && l.normY > 0.09 && l.normY < 0.91 && l.text.length > 18);
+      if (colLines.length >= 3) {
+        const xs = colLines.map(l => l.xStart).sort((a, b) => a - b);
+        const xe = colLines.map(l => l.xEnd).sort((a, b) => a - b);
+        colMargins[colId] = {
+          left: percentile(xs, 0.20),
+          right: percentile(xe, 0.85)
+        };
+      } else {
+        colMargins[colId] = { left: globalLeftMargin, right: globalRightMargin };
+      }
+    }
+
+    // Intercala linhas de texto e imagens pela coordenada vertical yTop (ordem exata de leitura!)
+    const pageItems = [
+      ...pd.lines,
+      ...pd.images.map(img => ({ kind: 'image', yTop: img.yTop, col: 0, img }))
+    ];
+    // Se página tem 1 coluna, ordena tudo por yTop; se 2 colunas, insere imagens após a coluna/posição mais próxima
+    const hasTwoCols = pd.lines.some(l => l.col === 2);
+    if (!hasTwoCols) {
+      pageItems.sort((a, b) => a.yTop - b.yTop);
+    } else {
+      // Mantém ordem de colunas nas linhas e insere imagens pela altura yTop no bloco adequado
+      const sortedImgs = pd.images.map(img => ({ kind: 'image', yTop: img.yTop, img })).sort((a, b) => a.yTop - b.yTop);
+      pageItems.length = 0;
+      let imgIdx = 0;
+      for (const l of pd.lines) {
+        while (imgIdx < sortedImgs.length && sortedImgs[imgIdx].yTop <= l.yTop && l.col !== 2) {
+          pageItems.push(sortedImgs[imgIdx++]);
+        }
+        pageItems.push(l);
+      }
+      while (imgIdx < sortedImgs.length) pageItems.push(sortedImgs[imgIdx++]);
+    }
+
+    let isFirstLineOnPage = true;
+
+    for (const item of pageItems) {
+      if (item.kind === 'image') {
+        // Não duplica a capa no meio do 1º capítulo se ela cobrir quase toda a página 1
+        if (coverImage && item.img.id === coverImage.id && opts.genCover && pd.lines.length <= 4) {
+          continue;
+        }
+        flushPara();
+        prevLine = null;
+        htmlParts.push(`<figure class="doc-figure"><img src="images/${item.img.filename}" data-img-id="${item.img.id}" alt="${escapeXml(item.img.alt)}"/></figure>`);
+        continue;
+      }
+
+      const l = item;
+      const text = l.text;
+
+      // 1. Remover cabeçalhos/rodapés e números de página
+      if (opts.stripHF) {
+        const isEdge = l.normY < 0.095 || l.normY > 0.905;
+        const isPageNum = /^[-–—\s]*(p[áa]g\.?|page)?\s*\d+\s*[-–—\s]*$/i.test(text);
+        const key = text.replace(/\d+/g, '#').trim().toLowerCase();
+        if (isEdge && (isPageNum || repeatedEdgeTexts.has(key))) {
+          removedLines++;
+          continue;
+        }
+      }
+
+      // 2. Detectar títulos / capítulos (diferenciando subtítulos e créditos de autor como "by Robert Jordan")
+      const cmPre = colMargins[l.col] || { left: globalLeftMargin, right: globalRightMargin };
+      const colWPre = Math.max(100, cmPre.right - cmPre.left);
+      const lineCentered = l.width < colWPre * 0.78 && Math.abs((l.xStart - cmPre.left) - (cmPre.right - l.xEnd)) < 22 && (l.xStart - cmPre.left) > 18;
+      const isAuthorCredit = /^(by|por|written by|escrito por|tradu[çc][ãa]o de)\s+/i.test(text);
+
+      let headingLevel = 0;
+      let isSubtitle = false;
+      if (opts.detectHeadings && text.length < 150) {
+        if (isAuthorCredit && l.fontSize >= medianFont * 1.05) {
+          headingLevel = 2;
+          isSubtitle = true;
+        } else if (l.fontSize >= medianFont * 1.38 || (chapterRegex.test(text) && l.fontSize >= medianFont * 1.04 && text.length < 100)) {
+          // Se veio logo após um H1 maior na mesma página (ex.: subtítulo), rebaixa para H2
+          const lastPart = htmlParts[htmlParts.length - 1] || '';
+          if (lastPart.startsWith('<h1') && lastPart.includes(`data-page="${l.page}"`) && l.isItalic) {
+            headingLevel = 2;
+            isSubtitle = true;
+          } else {
+            headingLevel = 1;
+          }
+        } else if (l.fontSize >= medianFont * 1.16 || (l.isBold && text.length < 85 && !/[.,;]$/.test(text) && l.width < globalLineWidth * 0.80)) {
+          headingLevel = 2;
+        }
+      }
+
+      if (headingLevel > 0) {
+        flushPara();
+        headingCount++;
+        const classes = [];
+        if (isSubtitle) classes.push('subtitle');
+        if (lineCentered) classes.push('centered');
+        const clsAttr = classes.length ? ` class="${classes.join(' ')}"` : '';
+        const inner = isSubtitle ? l.html : escapeXml(text);
+        htmlParts.push(`<h${headingLevel}${clsAttr} data-page="${l.page}">${inner}</h${headingLevel}>`);
+        prevLine = null;
+        isFirstLineOnPage = false;
+        continue;
+      }
+
+      const cm = colMargins[l.col] || { left: globalLeftMargin, right: globalRightMargin };
+      const colW = Math.max(100, cm.right - cm.left);
+
+      // 3. Listas com marcador ou numeração
+      if (bulletRegex.test(text)) {
+        flushPara();
+        currentParaText = text;
+        currentParaHtml = l.html;
+        prevLine = l;
+        isFirstLineOnPage = false;
+        continue;
+      }
+
+      // 4. Modo sem unwrap: cada linha vira parágrafo
+      if (!opts.unwrap) {
+        flushPara();
+        htmlParts.push(`<p>${l.html}</p>`);
+        paraCount++;
+        prevLine = l;
+        isFirstLineOnPage = false;
+        continue;
+      }
+
+      // 5. Decisão precisa de quebra de parágrafo (5 sinais combinados!)
+      let startNewPara = false;
+
+      if (!currentParaText || !prevLine) {
+        startNewPara = true;
+      } else {
+        const samePageAndCol = (prevLine.page === l.page && prevLine.col === l.col);
+        const dy = samePageAndCol ? (l.yTop - prevLine.yTop) : 0;
+
+        // Sinal A: Espaçamento vertical maior que a entrelinha real do documento (+24%)
+        const hasVerticalGap = samePageAndCol && dy > (medianLeading * 1.24);
+
+        // Sinal B: Recuo de primeira linha (clássico de livros!)
+        const indentDelta = l.xStart - cm.left;
+        const isIndented = indentDelta >= Math.max(medianFont * 0.72, 7.5) && indentDelta <= colW * 0.35;
+
+        // Sinal C: Linha anterior curta — a primeira palavra desta linha caberia na anterior!
+        const firstWord = (text.split(/\s+/)[0] || '');
+        const approxFirstWordW = firstWord.length * medianFont * 0.50;
+        const rightGap = cm.right - prevLine.xEnd;
+        const prevWasShort = rightGap > Math.max(approxFirstWordW + medianFont * 1.6, colW * 0.14);
+        const prevEndedSentence = terminalPunctRegex.test(prevLine.text);
+
+        // Sinal D: Diálogo em português (travessão) ou linha centralizada (epígrafe/separador)
+        const isDialogue = dialogueRegex.test(text);
+        const leftSpace = l.xStart - cm.left;
+        const rightSpace = cm.right - l.xEnd;
+        const isCentered = l.width < colW * 0.72 && Math.abs(leftSpace - rightSpace) < 16 && leftSpace > 24;
+
+        // Sinal E: Transição entre páginas ou colunas
+        const isCrossPageBreak = !samePageAndCol && (
+          prevEndedSentence ||
+          isIndented ||
+          isDialogue ||
+          prevWasShort
+        );
+
+        // Sinal F: Mudança abrupta de tamanho de fonte (ex.: nota de rodapé / citação)
+        const fontShift = Math.abs(l.fontSize - prevLine.fontSize) >= 1.6;
+
+        if (
+          hasVerticalGap ||
+          isDialogue ||
+          isCentered ||
+          isCrossPageBreak ||
+          fontShift ||
+          (isIndented && (prevEndedSentence || prevWasShort || indentDelta >= medianFont * 1.0)) ||
+          (prevWasShort && prevEndedSentence) ||
+          (prevLine.width < colW * 0.55 && prevEndedSentence)
+        ) {
+          startNewPara = true;
+        }
+      }
+
+      if (startNewPara) {
+        flushPara();
+        currentParaText = text;
+        currentParaHtml = l.html;
+      } else if (opts.dehyphen && /[a-záéíóúâêôãõç]-$/i.test(currentParaText) && /^[a-záéíóúâêôãõç]/i.test(text)) {
+        // Deshifenização preservando tags inline
+        currentParaText = currentParaText.slice(0, -1) + text;
+        currentParaHtml = currentParaHtml.replace(/-(<\/(?:strong|em)>)*$/, '$1') + text;
+      } else {
+        currentParaText += ' ' + text;
+        currentParaHtml += ' ' + l.html;
+      }
+
+      prevLine = l;
+      isFirstLineOnPage = false;
+    }
+  }
+  flushPara();
+
+  report(79, 3, 'Organizando capítulos e Representação Intermediária (IR)…');
+  await new Promise(r => setTimeout(r, 0));
+  const fullHtml = htmlParts.join('\n');
+  const title = opts.title || (pdfInfo.Title && pdfInfo.Title.trim()) || stripExt(filename);
+  const author = opts.author || (pdfInfo.Author && pdfInfo.Author.trim()) || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(fullHtml, title, opts.splitChapters);
+  report(84, 3, `${chapters.length} capítulo(s) e ${paraCount} parágrafo(s) estruturados.`);
+
+  log(`STAGE 3 [IR Canônico]: ${chapters.length} capítulo(s), ${paraCount} parágrafo(s), ${headingCount} título(s), ${allImages.length} imagem(ns), ${removedLines} linha(s) de ruído removida(s).`);
+
+  return {
+    title, author, lang: opts.lang || 'pt-BR',
+    chapters,
+    images: allImages,
+    coverImage,
+    stats: { pages: numPages, medianFont, medianLeading: Number(medianLeading.toFixed(1)), paraCount, headingCount, imagesCount: allImages.length, removedLines, chaptersCount: chapters.length }
+  };
+}
+
+async function parseEpubToIR(arrayBuffer, filename, opts, log) {
+  log('STAGE 1 [EPUB/JSZip]: Descompactando pacote EPUB e imagens...');
+  const zip = await JSZip.loadAsync(arrayBuffer);
+
+  let opfPath = null;
+  const containerFile = zip.file('META-INF/container.xml');
+  if (containerFile) {
+    const xmlStr = await containerFile.async('string');
+    const doc = new DOMParser().parseFromString(xmlStr, 'application/xml');
+    const rootfile = doc.querySelector('rootfile');
+    if (rootfile) opfPath = rootfile.getAttribute('full-path');
+  }
+  if (!opfPath) opfPath = Object.keys(zip.files).find(k => k.endsWith('.opf'));
+  if (!opfPath) throw new Error('Arquivo EPUB inválido: nenhum arquivo .opf encontrado.');
+
+  const baseDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+  const opfStr = await zip.file(opfPath).async('string');
+  const opfDoc = new DOMParser().parseFromString(opfStr, 'application/xml');
+
+  const getMeta = (localName) => {
+    const el = opfDoc.getElementsByTagNameNS('*', localName)[0] || opfDoc.querySelector(localName);
+    return el ? el.textContent.trim() : '';
+  };
+
+  const title = opts.title || getMeta('title') || stripExt(filename);
+  const author = opts.author || getMeta('creator') || 'Autor Desconhecido';
+  const lang = opts.lang || getMeta('language') || 'pt-BR';
+
+  const manifest = new Map();
+  const images = [];
+  const imgHrefMap = new Map();
+  let imgIdx = 0;
+
+  for (const item of opfDoc.querySelectorAll('manifest > item')) {
+    const id = item.getAttribute('id');
+    const href = decodeURIComponent(item.getAttribute('href') || '');
+    const mediaType = item.getAttribute('media-type') || '';
+    manifest.set(id, { href, mediaType });
+
+    if (mediaType.startsWith('image/') && !mediaType.includes('svg')) {
+      const f = zip.file(baseDir + href) || zip.file(href);
+      if (f) {
+        const b64 = await f.async('base64');
+        imgIdx++;
+        const ext = mediaType.includes('png') ? 'png' : 'jpg';
+        const imgId = `img_${String(imgIdx).padStart(3, '0')}`;
+        const imgObj = {
+          id: imgId, filename: `${imgId}.${ext}`, mime: mediaType,
+          base64: b64, dataUrl: `data:${mediaType};base64,${b64}`,
+          width: 800, height: 600, alt: `Imagem ${imgIdx}`
+        };
+        images.push(imgObj);
+        imgHrefMap.set(href, imgObj);
+        imgHrefMap.set(href.split('/').pop(), imgObj);
+      }
+    }
+  }
+
+  const spineIds = Array.from(opfDoc.querySelectorAll('spine > itemref')).map(r => r.getAttribute('idref'));
+  log(`STAGE 1 [EPUB]: "${title}" · ${spineIds.length} item(ns) no spine · ${images.length} imagem(ns).`);
+
+  const chapters = [];
+  for (let i = 0; i < spineIds.length; i++) {
+    const entry = manifest.get(spineIds[i]);
+    if (!entry) continue;
+    const file = zip.file(baseDir + entry.href) || zip.file(entry.href);
+    if (!file) continue;
+
+    const raw = await file.async('string');
+    const doc = new DOMParser().parseFromString(raw, 'text/html');
+    const body = doc.body;
+    if (!body) continue;
+    body.querySelectorAll('script, style').forEach(s => s.remove());
+    body.querySelectorAll('img').forEach(im => {
+      const src = decodeURIComponent(im.getAttribute('src') || '');
+      const clean = src.replace(/^(\.\.\/)+/, '');
+      const found = imgHrefMap.get(clean) || imgHrefMap.get(clean.split('/').pop());
+      if (found) {
+        im.setAttribute('src', `images/${found.filename}`);
+        im.setAttribute('data-img-id', found.id);
+      }
+    });
+    const inner = body.innerHTML.trim();
+    if (!inner || (!body.textContent.trim() && !body.querySelector('img'))) continue;
+
+    const h = body.querySelector('h1, h2, h3');
+    const chapTitle = (h && h.textContent.trim()) || `Seção ${chapters.length + 1}`;
+    chapters.push({ id: `chap_${chapters.length + 1}`, title: chapTitle, html: inner });
+  }
+
+  log(`STAGE 3 [IR Canônico]: ${chapters.length} capítulo(s) e ${images.length} imagem(ns) extraídos.`);
+  return { title, author, lang, chapters, images, stats: { chaptersCount: chapters.length, imagesCount: images.length } };
+}
+
+async function parseDocxToIR(arrayBuffer, filename, opts, log) {
+  log('STAGE 1 [Mammoth.js]: Convertendo OOXML (.docx) para HTML semântico + imagens...');
+  const result = await window.mammoth.convertToHtml({ arrayBuffer });
+  let html = result.value || '';
+
+  // Extrai imagens data:URI geradas pelo Mammoth para ir.images
+  const images = [];
+  const doc = new DOMParser().parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  doc.querySelectorAll('img').forEach((im, idx) => {
+    const src = im.getAttribute('src') || '';
+    const m = src.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+    if (m) {
+      const mime = m[1];
+      const base64 = m[2];
+      const ext = mime.includes('png') ? 'png' : 'jpg';
+      const id = `img_${String(idx + 1).padStart(3, '0')}`;
+      images.push({ id, filename: `${id}.${ext}`, mime, base64, dataUrl: src, width: 800, height: 600, alt: im.getAttribute('alt') || `Imagem ${idx + 1}` });
+      im.setAttribute('src', `images/${id}.${ext}`);
+      im.setAttribute('data-img-id', id);
+    }
+  });
+  html = doc.body.innerHTML;
+
+  const title = opts.title || stripExt(filename);
+  const author = opts.author || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(html, title, opts.splitChapters);
+  log(`STAGE 3 [IR Canônico]: ${chapters.length} capítulo(s) e ${images.length} imagem(ns) do DOCX.`);
+  return { title, author, lang: opts.lang || 'pt-BR', chapters, images, stats: { chaptersCount: chapters.length, imagesCount: images.length } };
+}
+
+async function parseMarkdownToIR(text, filename, opts, log) {
+  log('STAGE 1 [Marked.js]: Fazendo parse do Markdown...');
+  const html = window.marked.parse(text);
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const firstH1 = doc.querySelector('h1');
+  const title = opts.title || (firstH1 && firstH1.textContent.trim()) || stripExt(filename);
+  const author = opts.author || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(html, title, opts.splitChapters);
+  log(`STAGE 3 [IR Canônico]: ${chapters.length} capítulo(s) estruturado(s).`);
+  return { title, author, lang: opts.lang || 'pt-BR', chapters, images: [], stats: { chaptersCount: chapters.length } };
+}
+
+async function parseHtmlToIR(text, filename, opts, log) {
+  log('STAGE 1 [DOMParser]: Sanitizando e extraindo corpo HTML...');
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  const docTitle = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
+  const body = doc.body || doc.documentElement;
+  body.querySelectorAll('script, style, nav, footer, iframe').forEach(el => el.remove());
+
+  const images = [];
+  body.querySelectorAll('img').forEach((im, idx) => {
+    const src = im.getAttribute('src') || '';
+    const m = src.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+    if (m) {
+      const mime = m[1], base64 = m[2];
+      const ext = mime.includes('png') ? 'png' : 'jpg';
+      const id = `img_${String(idx + 1).padStart(3, '0')}`;
+      images.push({ id, filename: `${id}.${ext}`, mime, base64, dataUrl: src, width: 800, height: 600, alt: im.getAttribute('alt') || `Imagem ${idx + 1}` });
+      im.setAttribute('src', `images/${id}.${ext}`);
+      im.setAttribute('data-img-id', id);
+    }
+  });
+
+  const html = body.innerHTML;
+  const title = opts.title || docTitle || stripExt(filename);
+  const author = opts.author || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(html, title, opts.splitChapters);
+  log(`STAGE 3 [IR Canônico]: ${chapters.length} capítulo(s) e ${images.length} imagem(ns).`);
+  return { title, author, lang: opts.lang || 'pt-BR', chapters, images, stats: { chaptersCount: chapters.length, imagesCount: images.length } };
+}
+
+async function parseRtfToIR(text, filename, opts, log) {
+  log('STAGE 1 [RTF Parser]: Decodificando comandos e acentuação RTF...');
+  let s = text.replace(/\{\\\*?[a-z]+[^}]*\}/gi, (m) =>
+    /\\(fonttbl|colortbl|stylesheet|info|pict|header|footer|listtable)/i.test(m) ? '' : m
+  );
+  const win1252Decoder = new TextDecoder('windows-1252');
+  s = s.replace(/\\'([0-9a-f]{2})/gi, (_, hex) => win1252Decoder.decode(new Uint8Array([parseInt(hex, 16)])));
+  s = s.replace(/\\u(-?\d+)\??/g, (_, code) => {
+    let n = parseInt(code, 10);
+    if (n < 0) n += 65536;
+    return String.fromCharCode(n);
+  });
+  s = s.replace(/\\(par|line)\b\s?/g, '\n').replace(/\\tab\b\s?/g, '    ');
+  s = s.replace(/\\[a-z]+-?\d*\s?/gi, '').replace(/[{}]/g, '');
+
+  const paragraphs = s.split(/\n+/).map(p => p.trim()).filter(Boolean);
+  const html = paragraphs.map((p, idx) => idx === 0 && p.length < 100 ? `<h1>${escapeXml(p)}</h1>` : `<p>${escapeXml(p)}</p>`).join('\n');
+  const title = opts.title || stripExt(filename);
+  const author = opts.author || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(html, title, opts.splitChapters);
+  log(`STAGE 3 [IR Canônico]: ${paragraphs.length} parágrafo(s) extraído(s).`);
+  return { title, author, lang: opts.lang || 'pt-BR', chapters, images: [], stats: { chaptersCount: chapters.length } };
+}
+
+async function parseTxtToIR(text, filename, opts, log) {
+  log('STAGE 1 [TXT Parser]: Agrupando parágrafos e detectando títulos...');
+  const blocks = text.replace(/\r\n/g, '\n').split(/\n\s*\n+/).map(b => b.trim()).filter(Boolean);
+  const htmlParts = blocks.map((b, i) => {
+    const clean = b.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (i === 0 && clean.length < 90 && !/[.!?]$/.test(clean)) return `<h1>${escapeXml(clean)}</h1>`;
+    if (/^(cap[ií]tulo|chapter|parte|se[çc][ãa]o)\b/i.test(clean) && clean.length < 100) return `<h1>${escapeXml(clean)}</h1>`;
+    return `<p>${escapeXml(clean)}</p>`;
+  });
+  const title = opts.title || stripExt(filename);
+  const author = opts.author || 'Autor Desconhecido';
+  const chapters = splitHtmlIntoChapters(htmlParts.join('\n'), title, opts.splitChapters);
+  log(`STAGE 3 [IR Canônico]: ${blocks.length} bloco(s) em ${chapters.length} capítulo(s).`);
+  return { title, author, lang: opts.lang || 'pt-BR', chapters, images: [], stats: { chaptersCount: chapters.length } };
+}
+
+/* ============================================================================
+   WRITERS (STAGE 4) — COM SUPORTE COMPLETO A IMAGENS EM EPUB, DOCX, HTML E PDF
+   ============================================================================ */
+function buildCoverSvg(title, author) {
+  const safeTitle = escapeXml(title.slice(0, 60));
+  const safeAuthor = escapeXml(author.slice(0, 48));
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1d1d1f"/>
+      <stop offset="100%" stop-color="#0b1526"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1200" fill="url(#bg)"/>
+  <rect x="64" y="160" width="72" height="6" rx="3" fill="#0a84ff"/>
+  <text x="64" y="280" fill="#f5f5f7" font-family="-apple-system, Helvetica, sans-serif" font-size="48" font-weight="600">${safeTitle}</text>
+  <text x="64" y="1030" fill="#a1a1a6" font-family="-apple-system, Helvetica, sans-serif" font-size="26">${safeAuthor}</text>
+  <text x="64" y="1080" fill="#6e6e73" font-family="monospace" font-size="16">Folio · EPUB 3</text>
+</svg>`;
+}
+
+async function writeIRToEpub(ir, opts, log, onProgress) {
+  const report = onProgress || (() => {});
+  const imgs = ir.images || [];
+  report(86, 4, `Montando estrutura EPUB 3 (${ir.chapters.length} cap., ${imgs.length} img)…`);
+  log(`STAGE 4 [EPUB 3 Writer]: Montando OPF, NAV, NCX, ${ir.chapters.length} capítulo(s) e ${imgs.length} imagem(ns)...`);
+  const zip = new JSZip();
+  zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+  zip.file('META-INF/container.xml', `<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles>
+</container>`);
+
+  const fontStack = opts.font === 'sans'
+    ? '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    : (opts.font === 'mono' ? 'ui-monospace, Consolas, monospace' : 'Georgia, "Times New Roman", serif');
+
+  zip.file('OEBPS/styles.css', `body { font-family: ${fontStack}; line-height: 1.65; margin: 5%; color: #1d1d1f; }
+h1, h2, h3 { line-height: 1.25; margin-top: 1.4em; margin-bottom: 0.6em; page-break-after: avoid; }
+h1 { font-size: 1.6em; border-bottom: 1px solid #e5e5ea; padding-bottom: 0.25em; }
+h1.centered { border-bottom: none; margin-bottom: 0.3em; }
+h2 { font-size: 1.25em; }
+h2.subtitle { font-size: 1.15em; font-weight: normal; font-style: italic; color: #555; margin-top: 0.2em; margin-bottom: 1.2em; }
+.centered { text-align: center; text-indent: 0; }
+p { margin: 0 0 0.75em 0; text-align: justify; text-indent: 1.25em; }
+h1 + p, h2 + p, h3 + p, figure + p { text-indent: 0; }
+blockquote { margin: 1em 1.5em; padding-left: 1em; border-left: 3px solid #0071e3; font-style: italic; }
+figure.doc-figure { margin: 1.2em auto; text-align: center; page-break-inside: avoid; }
+img { max-width: 100%; height: auto; display: inline-block; }
+.cover-wrap { text-align: center; margin: 0; padding: 0; }`);
+
+  const manifestItems = [
+    `<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>`,
+    `<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>`,
+    `<item id="css" href="styles.css" media-type="text/css"/>`
+  ];
+  const spineItems = [], navLinks = [], ncxPoints = [];
+  let playOrder = 1;
+
+  // Empacota todas as imagens extraídas em OEBPS/images/
+  for (const img of imgs) {
+    zip.file(`OEBPS/images/${img.filename}`, img.base64, { base64: true });
+    manifestItems.push(`<item id="${img.id}" href="images/${img.filename}" media-type="${img.mime}"/>`);
+  }
+
+  // Capa: usa a capa real da Página 1 (se detectada) ou gera capa tipográfica SVG
+  if (opts.genCover) {
+    if (ir.coverImage) {
+      zip.file('OEBPS/cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="${escapeXml(ir.lang)}">
+<head><title>Capa</title><link rel="stylesheet" type="text/css" href="styles.css"/></head>
+<body class="cover-wrap"><img src="images/${ir.coverImage.filename}" alt="${escapeXml(ir.title)}"/></body>
+</html>`);
+      // Marca o item de capa no manifest com cover-image
+      const idx = manifestItems.findIndex(m => m.includes(`id="${ir.coverImage.id}"`));
+      if (idx >= 0) manifestItems[idx] = manifestItems[idx].replace('/>', ' properties="cover-image"/>');
+      manifestItems.push(`<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>`);
+      spineItems.push(`<itemref idref="cover-page"/>`);
+    } else {
+      zip.file('OEBPS/cover.svg', buildCoverSvg(ir.title, ir.author));
+      zip.file('OEBPS/cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="${escapeXml(ir.lang)}">
+<head><title>Capa</title><link rel="stylesheet" type="text/css" href="styles.css"/></head>
+<body class="cover-wrap"><img src="cover.svg" alt="${escapeXml(ir.title)}"/></body>
+</html>`);
+      manifestItems.push(`<item id="cover-img" href="cover.svg" media-type="image/svg+xml" properties="cover-image"/>`);
+      manifestItems.push(`<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>`);
+      spineItems.push(`<itemref idref="cover-page"/>`);
+    }
+  }
+
+  ir.chapters.forEach((chap, idx) => {
+    const fileName = `chap_${String(idx + 1).padStart(3, '0')}.xhtml`;
+    const strictBody = htmlToStrictXhtml(chap.html);
+    zip.file(`OEBPS/${fileName}`, `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="${escapeXml(ir.lang)}">
+<head><meta charset="UTF-8"/><title>${escapeXml(chap.title)}</title><link rel="stylesheet" type="text/css" href="styles.css"/></head>
+<body>\n${strictBody}\n</body></html>`);
+    manifestItems.push(`<item id="chap${idx + 1}" href="${fileName}" media-type="application/xhtml+xml"/>`);
+    spineItems.push(`<itemref idref="chap${idx + 1}"/>`);
+    navLinks.push(`      <li><a href="${fileName}">${escapeXml(chap.title)}</a></li>`);
+    ncxPoints.push(`    <navPoint id="navPoint-${playOrder}" playOrder="${playOrder}"><navLabel><text>${escapeXml(chap.title)}</text></navLabel><content src="${fileName}"/></navPoint>`);
+    playOrder++;
+  });
+
+  zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="${escapeXml(ir.lang)}">
+<head><title>Sumário</title><link rel="stylesheet" type="text/css" href="styles.css"/></head>
+<body><nav epub:type="toc" id="toc"><h1>Sumário</h1><ol>\n${navLinks.join('\n')}\n</ol></nav></body></html>`);
+
+  const uid = 'urn:uuid:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2));
+  const modified = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+
+  zip.file('OEBPS/toc.ncx', `<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head><meta name="dtb:uid" content="${uid}"/><meta name="dtb:depth" content="1"/></head>
+  <docTitle><text>${escapeXml(ir.title)}</text></docTitle>
+  <navMap>\n${ncxPoints.join('\n')}\n  </navMap>
+</ncx>`);
+
+  zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="bookid">${uid}</dc:identifier>
+    <dc:title>${escapeXml(ir.title)}</dc:title>
+    <dc:creator>${escapeXml(ir.author)}</dc:creator>
+    <dc:language>${escapeXml(ir.lang)}</dc:language>
+    <meta property="dcterms:modified">${modified}</meta>
+  </metadata>
+  <manifest>\n    ${manifestItems.join('\n    ')}\n  </manifest>
+  <spine toc="ncx">\n    ${spineItems.join('\n    ')}\n  </spine>
+</package>`);
+
+  const blob = await zip.generateAsync(
+    { type: 'blob', mimeType: 'application/epub+zip', compression: 'DEFLATE' },
+    (meta) => report(88 + (meta.percent || 0) * 0.11, 4, `Compactando pacote EPUB 3 (${Math.round(meta.percent || 0)}%)…`)
+  );
+  log(`STAGE 4 [EPUB 3 Writer]: Pacote EPUB válido com ${imgs.length} imagem(ns) gerado (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToDocx(ir, opts, log, onProgress) {
+  const report = onProgress || (() => {});
+  const imgs = ir.images || [];
+  report(86, 4, `Montando documento OOXML (.docx)…`);
+  log(`STAGE 4 [OOXML DOCX Writer]: Construindo word/document.xml com ${imgs.length} imagem(ns)...`);
+  const zip = new JSZip();
+
+  const imgRelMap = new Map();
+  const relEntries = [
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`
+  ];
+  imgs.forEach((img, i) => {
+    const rId = `rIdImg${i + 1}`;
+    imgRelMap.set(img.id, { rId, img });
+    imgRelMap.set(`images/${img.filename}`, { rId, img });
+    zip.file(`word/media/${img.filename}`, img.base64, { base64: true });
+    relEntries.push(`<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${img.filename}"/>`);
+  });
+
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="jpg" ContentType="image/jpeg"/>
+  <Default Extension="jpeg" ContentType="image/jpeg"/>
+  <Default Extension="png" ContentType="image/png"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`);
+
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  ${relEntries.join('\n  ')}
+</Relationships>`);
+
+  zip.file('word/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr>
+    <w:pPr><w:spacing w:after="140" w:line="276" w:lineRule="auto"/></w:pPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1">
+    <w:name w:val="heading 1"/>
+    <w:pPr><w:spacing w:before="320" w:after="140"/></w:pPr>
+    <w:rPr><w:b/><w:color w:val="0071E3"/><w:sz w:val="36"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2">
+    <w:name w:val="heading 2"/>
+    <w:pPr><w:spacing w:before="240" w:after="100"/></w:pPr>
+    <w:rPr><w:b/><w:color w:val="1D1D1F"/><w:sz w:val="28"/></w:rPr>
+  </w:style>
+</w:styles>`);
+
+  let docPrId = 1;
+  const blocks = htmlToBlocks(ir.chapters.map(c => c.html).join('\n'));
+  const pXml = blocks.map(b => {
+    if (b.type === 'img') {
+      const ref = imgRelMap.get(b.imgId) || imgRelMap.get(b.src);
+      if (!ref) return '';
+      const maxEmuW = 5400000; // ~5.9 in
+      const wPx = ref.img.width || 600, hPx = ref.img.height || 400;
+      const cx = Math.min(maxEmuW, Math.round(wPx * 9525));
+      const cy = Math.round(cx * (hPx / Math.max(1, wPx)));
+      const id = docPrId++;
+      return `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Imagem ${id}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="${escapeXml(ref.img.filename)}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${ref.rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+    }
+    let styleId = 'Normal';
+    if (b.type === 'h1') styleId = 'Heading1';
+    else if (b.type === 'h2' || b.type === 'h3') styleId = 'Heading2';
+    const prefix = b.type === 'li' ? '• ' : '';
+    const runs = (b.runs && b.runs.length ? b.runs : [{ text: b.text }]);
+    const runsXml = runs.map((r, i) => {
+      const rPr = [];
+      if (r.bold) rPr.push('<w:b/>');
+      if (r.italic) rPr.push('<w:i/>');
+      const rPrTag = rPr.length ? `<w:rPr>${rPr.join('')}</w:rPr>` : '';
+      return `<w:r>${rPrTag}<w:t xml:space="preserve">${escapeXml((i === 0 ? prefix : '') + r.text)}</w:t></w:r>`;
+    }).join('');
+    return `<w:p><w:pPr><w:pStyle w:val="${styleId}"/></w:pPr>${runsXml}</w:p>`;
+  }).join('\n');
+
+  zip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>${pXml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body>
+</w:document>`);
+
+  const blob = await zip.generateAsync(
+    { type: 'blob', mimeType: FORMATS.docx.mime },
+    (meta) => report(88 + (meta.percent || 0) * 0.11, 4, `Compactando DOCX (${Math.round(meta.percent || 0)}%)…`)
+  );
+  log(`STAGE 4 [DOCX Writer]: Arquivo .docx gerado (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToPdf(ir, opts, log) {
+  log('STAGE 4 [jsPDF Writer]: Paginando blocos tipográficos e imagens em PDF...');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const fontName = opts.font === 'sans' ? 'helvetica' : (opts.font === 'mono' ? 'courier' : 'times');
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const marginX = 56, marginTop = 64, marginBottom = 56;
+  const maxW = pageW - marginX * 2;
+  const imgById = new Map((ir.images || []).map(im => [im.id, im]));
+  const imgByPath = new Map((ir.images || []).map(im => [`images/${im.filename}`, im]));
+
+  const safePdfText = (t) => String(t || '')
+    .replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[—–]/g, '-').replace(/…/g, '...').replace(/•/g, '-')
+    .replace(/[^\x09\x0A\x0D\x20-\xFF]/g, '');
+
+  doc.setFont(fontName, 'bold'); doc.setFontSize(24); doc.setTextColor(0, 113, 227);
+  const titleLines = doc.splitTextToSize(safePdfText(ir.title), maxW);
+  doc.text(titleLines, marginX, 180);
+  doc.setFont(fontName, 'normal'); doc.setFontSize(13); doc.setTextColor(110, 110, 115);
+  doc.text(safePdfText(ir.author), marginX, 180 + titleLines.length * 30 + 16);
+
+  let y = marginTop;
+  doc.addPage();
+  doc.setTextColor(29, 29, 31);
+  const ensureSpace = (needed) => { if (y + needed > pageH - marginBottom) { doc.addPage(); y = marginTop; } };
+
+  for (const b of htmlToBlocks(ir.chapters.map(c => c.html).join('\n'))) {
+    if (b.type === 'img') {
+      const img = imgById.get(b.imgId) || imgByPath.get(b.src);
+      if (img && img.dataUrl) {
+        const aspect = (img.height || 400) / Math.max(1, img.width || 600);
+        let drawW = Math.min(maxW, (img.width || 400) * 0.65);
+        let drawH = drawW * aspect;
+        if (drawH > pageH - marginTop - marginBottom - 20) {
+          drawH = pageH - marginTop - marginBottom - 20;
+          drawW = drawH / aspect;
+        }
+        ensureSpace(drawH + 16);
+        const fmt = img.mime && img.mime.includes('png') ? 'PNG' : 'JPEG';
+        doc.addImage(img.dataUrl, fmt, marginX + (maxW - drawW) / 2, y, drawW, drawH);
+        y += drawH + 16;
+      }
+    } else if (b.type === 'h1') {
+      ensureSpace(44); y += 10;
+      doc.setFont(fontName, 'bold'); doc.setFontSize(17); doc.setTextColor(0, 113, 227);
+      const lines = doc.splitTextToSize(safePdfText(b.text), maxW);
+      doc.text(lines, marginX, y); y += lines.length * 22 + 10;
+      doc.setTextColor(29, 29, 31);
+    } else if (b.type === 'h2' || b.type === 'h3') {
+      ensureSpace(34); y += 6;
+      doc.setFont(fontName, 'bold'); doc.setFontSize(13.5);
+      const lines = doc.splitTextToSize(safePdfText(b.text), maxW);
+      doc.text(lines, marginX, y); y += lines.length * 18 + 6;
+    } else {
+      doc.setFont(fontName, b.type === 'blockquote' ? 'italic' : 'normal'); doc.setFontSize(11);
+      const prefix = b.type === 'li' ? '- ' : '';
+      const indent = b.type === 'blockquote' ? 18 : 0;
+      for (const line of doc.splitTextToSize(safePdfText(prefix + b.text), maxW - indent)) {
+        ensureSpace(16); doc.text(line, marginX + indent, y); y += 15.5;
+      }
+      y += 8;
+    }
+  }
+
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let p = 2; p <= totalPages; p++) {
+    doc.setPage(p); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(134, 134, 139);
+    doc.text(`${p - 1} / ${totalPages - 1}`, pageW / 2, pageH - 26, { align: 'center' });
+  }
+
+  const blob = doc.output('blob');
+  log(`STAGE 4 [PDF Writer]: PDF gerado com ${totalPages} páginas (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToMarkdown(ir, opts, log) {
+  log('STAGE 4 [Turndown.js]: Convertendo IR para Markdown...');
+  const td = new window.TurndownService({ headingStyle: 'atx', bulletListMarker: '-' });
+  const frontmatter = `---\ntitle: "${ir.title.replace(/"/g, '\\"')}"\nauthor: "${ir.author.replace(/"/g, '\\"')}"\nlang: "${ir.lang}"\n---\n\n`;
+  const md = frontmatter + ir.chapters.map(c => td.turndown(c.html)).join('\n\n---\n\n');
+  const blob = new Blob([md], { type: FORMATS.md.mime });
+  log(`STAGE 4 [Markdown Writer]: Arquivo .md gerado (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToHtml(ir, opts, log) {
+  log('STAGE 4 [HTML5 Writer]: Gerando página HTML responsiva com imagens embutidas...');
+  const fontStack = opts.font === 'sans'
+    ? '-apple-system, BlinkMacSystemFont, Inter, sans-serif'
+    : (opts.font === 'mono' ? 'ui-monospace, Consolas, monospace' : 'Georgia, "Times New Roman", serif');
+  const toc = ir.chapters.map((c, i) => `<li><a href="#chap_${i + 1}">${escapeXml(c.title)}</a></li>`).join('\n');
+  const body = ir.chapters.map((c, i) => `<section id="chap_${i + 1}">\n${inlineImagesForBrowser(c.html, ir.images)}\n</section>`).join('\n<hr/>\n');
+  const full = `<!DOCTYPE html><html lang="${escapeXml(ir.lang)}"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${escapeXml(ir.title)}</title>
+<style>body{max-width:740px;margin:56px auto;padding:0 24px;font-family:${fontStack};line-height:1.75;color:#1d1d1f;background:#fbfbfd}header{border-bottom:1px solid #e5e5ea;padding-bottom:20px;margin-bottom:32px}h1{font-size:2.1rem;letter-spacing:-.03em}nav.toc{background:#fff;border:1px solid #e5e5ea;border-radius:16px;padding:18px 24px;margin-bottom:32px}nav.toc a{color:#0071e3;text-decoration:none}p{text-align:justify;margin-bottom:1em;text-indent:1.25em}h1+p,h2+p,figure+p{text-indent:0}figure{margin:24px auto;text-align:center}img{max-width:100%;height:auto;border-radius:12px}hr{border:none;border-top:1px solid #e5e5ea;margin:36px 0}</style></head>
+<body><header><h1>${escapeXml(ir.title)}</h1><p style="color:#6e6e73;margin:0;text-indent:0">${escapeXml(ir.author)}</p></header>${ir.chapters.length > 1 ? `<nav class="toc"><strong>Sumário</strong><ol>${toc}</ol></nav>` : ''}<main>${body}</main></body></html>`;
+  const blob = new Blob([full], { type: FORMATS.html.mime });
+  log(`STAGE 4 [HTML5 Writer]: Página HTML gerada (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToRtf(ir, opts, log) {
+  log('STAGE 4 [RTF Writer]: Codificando RTF com suporte a acentuação PT-BR...');
+  const encodeRtf = (str) => Array.from(String(str || '')).map(ch => {
+    const code = ch.charCodeAt(0);
+    if (ch === '\\' || ch === '{' || ch === '}') return '\\' + ch;
+    return code < 128 ? ch : `\\u${code}?`;
+  }).join('');
+  const body = htmlToBlocks(ir.chapters.map(c => c.html).join('\n')).map(b => {
+    if (b.type === 'h1') return `{\\pard\\sa200\\sb240\\b\\fs32 ${encodeRtf(b.text)}\\par}`;
+    if (b.type === 'h2' || b.type === 'h3') return `{\\pard\\sa160\\sb180\\b\\fs26 ${encodeRtf(b.text)}\\par}`;
+    return `{\\pard\\sa140\\fs22 ${encodeRtf((b.type === 'li' ? '- ' : '') + b.text)}\\par}`;
+  }).join('\n');
+  const blob = new Blob([`{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Georgia;}}\n${body}\n}`], { type: FORMATS.rtf.mime });
+  log(`STAGE 4 [RTF Writer]: Arquivo RTF gerado (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+async function writeIRToTxt(ir, opts, log) {
+  log('STAGE 4 [TXT Writer]: Extraindo texto plano limpo...');
+  const lines = [ir.title.toUpperCase(), `Autor: ${ir.author}`, '='.repeat(60), ''];
+  for (const b of htmlToBlocks(ir.chapters.map(c => c.html).join('\n'))) {
+    if (b.type === 'h1') lines.push('', b.text.toUpperCase(), '-'.repeat(Math.min(60, b.text.length)), '');
+    else if (b.type === 'h2' || b.type === 'h3') lines.push('', '## ' + b.text, '');
+    else if (b.type === 'li') lines.push('  • ' + b.text);
+    else lines.push(b.text, '');
+  }
+  const blob = new Blob([lines.join('\n')], { type: FORMATS.txt.mime });
+  log(`STAGE 4 [TXT Writer]: Arquivo TXT gerado (${formatBytes(blob.size)}).`);
+  return blob;
+}
+
+/* ============================================================================
+   BARRA DE PROGRESSO AO VIVO (O(1) DOM UPDATE + ETA)
+   ============================================================================ */
+function formatDuration(sec) {
+  if (!isFinite(sec) || sec < 0) return '';
+  if (sec < 60) return `${Math.max(1, Math.round(sec))}s`;
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+function syncProgressDock(job) {
+  const dock = document.getElementById('progressDock');
+  if (!dock || !job) return;
+  dock.classList.remove('working', 'done', 'error');
+  if (job.status === 'working' || job.status === 'done' || job.status === 'error') {
+    dock.classList.add(job.status);
+  }
+  const pct = Math.max(0, Math.min(100, Math.round(job.progress || 0)));
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('progTrack').setAttribute('aria-valuenow', String(pct));
+  document.getElementById('progDetail').textContent = job.progressDetail || (
+    job.status === 'done' ? 'Conversão concluída com sucesso' :
+    job.status === 'error' ? 'Falha na conversão' :
+    'Pronto para converter'
+  );
+
+  let etaText = '';
+  if (job.status === 'working' && job.startedAt) {
+    const elapsed = (performance.now() - job.startedAt) / 1000;
+    if (pct >= 8 && pct < 98 && elapsed >= 1.2) {
+      const rem = (elapsed / pct) * (100 - pct);
+      etaText = `${formatDuration(elapsed)} · ~${formatDuration(rem)} restantes`;
+    } else if (elapsed >= 1) {
+      etaText = `${formatDuration(elapsed)}`;
+    }
+  } else if (job.status === 'done' && job.elapsedSec != null) {
+    etaText = `Concluído em ${job.elapsedSec.toFixed(2)}s`;
+  }
+  document.getElementById('progEta').textContent = etaText;
+
+  const curStage = job.stageIdx || 0;
+  document.querySelectorAll('#progStages .stage-chip').forEach(chip => {
+    const s = Number(chip.dataset.stage);
+    chip.classList.remove('active', 'done');
+    if (job.status === 'done') chip.classList.add('done');
+    else if (job.status === 'working') {
+      if (s < curStage) chip.classList.add('done');
+      else if (s === curStage) chip.classList.add('active');
+    }
+  });
+}
+
+function updateJobProgress(job, pct, stageIdx, detail) {
+  job.progress = Math.max(0, Math.min(100, pct));
+  if (stageIdx) job.stageIdx = stageIdx;
+  if (detail) job.progressDetail = detail;
+
+  if (job.id === state.activeJobId) {
+    syncProgressDock(job);
+  }
+  // Atualiza mini barra na linha da fila em O(1) sem recriar o HTML da fila
+  const miniFill = document.getElementById(`miniFill_${job.id}`);
+  const miniTrack = document.getElementById(`miniTrack_${job.id}`);
+  if (miniFill && miniTrack) {
+    miniTrack.classList.add('visible');
+    miniFill.style.width = Math.round(job.progress) + '%';
+  }
+  const statusEl = document.getElementById(`statusPill_${job.id}`);
+  if (statusEl && job.status === 'working') {
+    statusEl.textContent = `${Math.round(job.progress)}%`;
+  }
+}
+
+/* ============================================================================
+   ORQUESTRADOR PRINCIPAL
+   ============================================================================ */
+async function runJobConversion(job) {
+  job.status = 'working';
+  job.error = null;
+  job.log = [];
+  job.outputBlob = null;
+  job.progress = 1;
+  job.stageIdx = 1;
+  job.startedAt = performance.now();
+  job.elapsedSec = null;
+  job.progressDetail = 'Preparando documento…';
+  state.activeJobId = job.id;
+
+  const log = (msg) => {
+    const ts = new Date().toLocaleTimeString('pt-BR');
+    job.log.push(`[${ts}] ${msg}`);
+    if (job.id === state.activeJobId && state.activeInspTab === 'log') {
+      const logBox = document.querySelector('#inspectorBody .pipeline-log');
+      if (logBox) {
+        logBox.textContent = job.log.join('\n');
+        logBox.scrollTop = logBox.scrollHeight;
+      } else {
+        renderInspector();
+      }
+    }
+  };
+
+  const onProgress = (pct, stageIdx, detail) => updateJobProgress(job, pct, stageIdx, detail);
+
+  renderQueue();
+  renderInspector();
+
+  const opts = getOptions();
+  const usePython = document.getElementById('engineMode').value === 'python' && state.pythonServerAvailable;
+
+  try {
+    const t0 = job.startedAt;
+    log(`Iniciando conversão: ${job.name} (${job.srcFmt.toUpperCase()} → ${job.dstFmt.toUpperCase()})`);
+
+    if (usePython) {
+      log(`Enviando para motor local Python PyMuPDF em ${state.pythonServerUrl}/api/convert...`);
+      onProgress(10, 1, 'Enviando arquivo ao motor Python local…');
+      const fd = new FormData();
+      fd.append('file', job.file);
+      fd.append('target_format', job.dstFmt);
+      fd.append('options', JSON.stringify(opts));
+
+      const blob = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${state.pythonServerUrl}/api/convert`);
+        xhr.responseType = 'blob';
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const p = 10 + (ev.loaded / ev.total) * 35;
+            onProgress(p, 1, `Enviando ao motor Python (${Math.round((ev.loaded / ev.total) * 100)}%)…`);
+          }
+        };
+        xhr.upload.onload = () => onProgress(55, 2, 'Processando no motor nativo PyMuPDF…');
+        xhr.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const p = 75 + (ev.loaded / ev.total) * 23;
+            onProgress(p, 4, 'Recebendo arquivo convertido…');
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response);
+          else reject(new Error(`Erro HTTP ${xhr.status} no motor Python`));
+        };
+        xhr.onerror = () => reject(new Error('Falha de conexão com o motor local Python.'));
+        xhr.send(fd);
+      });
+
+      job.outputBlob = blob;
+      job.outputName = `${stripExt(job.name)}.${job.dstFmt}`;
+      job.elapsedSec = (performance.now() - t0) / 1000;
+      job.status = 'done';
+      onProgress(100, 4, `Concluído pelo motor Python (${formatBytes(blob.size)})`);
+      log(`Concluído pelo motor Python em ${job.elapsedSec.toFixed(2)}s (${formatBytes(blob.size)}).`);
+      renderQueue();
+      renderInspector();
+      return;
+    }
+
+    let ir;
+    if (job.srcFmt === 'pdf') {
+      ir = await parsePdfToIR(await job.file.arrayBuffer(), job.name, opts, log, onProgress);
+    } else {
+      onProgress(20, 1, `Lendo arquivo ${job.srcFmt.toUpperCase()}…`);
+      if (job.srcFmt === 'epub') ir = await parseEpubToIR(await job.file.arrayBuffer(), job.name, opts, log);
+      else if (job.srcFmt === 'docx') ir = await parseDocxToIR(await job.file.arrayBuffer(), job.name, opts, log);
+      else if (job.srcFmt === 'md') ir = await parseMarkdownToIR(await job.file.text(), job.name, opts, log);
+      else if (job.srcFmt === 'html') ir = await parseHtmlToIR(await job.file.text(), job.name, opts, log);
+      else if (job.srcFmt === 'rtf') ir = await parseRtfToIR(await job.file.text(), job.name, opts, log);
+      else ir = await parseTxtToIR(await job.file.text(), job.name, opts, log);
+      onProgress(78, 3, 'Representação Intermediária (IR) pronta.');
+    }
+    job.ir = ir;
+
+    let blob;
+    onProgress(86, 4, `Gerando arquivo ${job.dstFmt.toUpperCase()}…`);
+    if (job.dstFmt === 'epub') blob = await writeIRToEpub(ir, opts, log, onProgress);
+    else if (job.dstFmt === 'docx') blob = await writeIRToDocx(ir, opts, log, onProgress);
+    else if (job.dstFmt === 'pdf') blob = await writeIRToPdf(ir, opts, log);
+    else if (job.dstFmt === 'md') blob = await writeIRToMarkdown(ir, opts, log);
+    else if (job.dstFmt === 'html') blob = await writeIRToHtml(ir, opts, log);
+    else if (job.dstFmt === 'rtf') blob = await writeIRToRtf(ir, opts, log);
+    else blob = await writeIRToTxt(ir, opts, log);
+
+    job.outputBlob = blob;
+    job.outputName = `${stripExt(job.name)}.${job.dstFmt}`;
+    job.elapsedSec = (performance.now() - t0) / 1000;
+    job.status = 'done';
+    onProgress(100, 4, `Concluído · ${formatBytes(blob.size)}`);
+    log(`Concluído com sucesso em ${job.elapsedSec.toFixed(2)}s.`);
+  } catch (err) {
+    console.error(err);
+    job.status = 'error';
+    job.error = err.message || String(err);
+    job.progressDetail = `Erro: ${job.error}`;
+    log(`ERRO: ${job.error}`);
+  }
+
+  renderQueue();
+  renderInspector();
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+/* ============================================================================
+   DOCUMENTOS DE EXEMPLO
+   ============================================================================ */
+async function createSamplePdfFile() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  doc.setProperties({ title: 'Guia Prático de Conversão de Documentos', author: 'Folio' });
+
+  // Cria uma imagem/diagrama ilustrativo real via canvas para testar extração de imagens
+  const cv = document.createElement('canvas');
+  cv.width = 680; cv.height = 240;
+  const ctx = cv.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 680, 240);
+  grad.addColorStop(0, '#0b1526'); grad.addColorStop(1, '#1d3557');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 680, 240);
+  const steps = ['1. Parser', '2. Reflow', '3. IR Único', '4. EPUB 3'];
+  steps.forEach((s, idx) => {
+    const x = 34 + idx * 160;
+    ctx.fillStyle = idx === 3 ? '#0071e3' : 'rgba(255,255,255,0.14)';
+    ctx.beginPath(); ctx.roundRect(x, 78, 132, 76, 14); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 17px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(s, x + 66, 122);
+    if (idx < 3) { ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('→', x + 146, 122); }
+  });
+  ctx.fillStyle = '#cbd5e1'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Pipeline Arquitetural de Conversão (Figura Embutida no PDF)', 340, 206);
+  const diagramDataUrl = cv.toDataURL('image/jpeg', 0.92);
+
+  // Página 1: Testa parágrafos com RECUO DE 1ª LINHA (sem espaço vertical extra!) + imagem embutida
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.text('Folio - Documento de Exemplo', 56, 36);
+  doc.setFont('times', 'bold'); doc.setFontSize(22);
+  doc.text('Capítulo 1: Como Funciona um Arquivo PDF', 56, 92);
+
+  doc.setFont('times', 'normal'); doc.setFontSize(12);
+  const p1Lines = [
+    [76, 'Um arquivo PDF guarda instruções exatas de desenho: cada linha de texto possui'],
+    [56, 'coordenadas X e Y fixas na página. Por isso, ler um PDF em um Kindle ou celular'],
+    [56, 'costuma exigir zoom constante, pois o texto não se adapta ao tamanho da tela.'],
+    [76, 'Mesmo sem linha em branco entre parágrafos, um bom conversor detecta o recuo'],
+    [56, 'da primeira linha e o fim curto da frase anterior para separar cada parágrafo'],
+    [56, 'com precisão editorial — preservando também palavras hifenizadas corretamente.']
+  ];
+  let y = 132;
+  for (const [x, txt] of p1Lines) { doc.text(txt, x, y); y += 16; }
+
+  // Insere a imagem real no meio da página 1
+  doc.addImage(diagramDataUrl, 'JPEG', 76, y + 14, 440, 155);
+  y += 192;
+
+  doc.text('— E as imagens do PDF também aparecem no EPUB?', 76, y); y += 16;
+  doc.text('— Sim! Elas são extraídas na posição exata entre os parágrafos.', 76, y);
+  doc.setFontSize(9);
+  doc.text('1', 297, 810, { align: 'center' });
+
+  // Página 2: Testa parágrafos separados por espaçamento vertical
+  doc.addPage();
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.text('Folio - Documento de Exemplo', 56, 36);
+  doc.setFont('times', 'bold'); doc.setFontSize(22);
+  doc.text('Capítulo 2: A Anatomia de um EPUB 3', 56, 92);
+  doc.setFont('times', 'normal'); doc.setFontSize(12);
+  y = 132;
+  const p2a = [
+    'Um arquivo EPUB é um pacote ZIP padronizado pela W3C. Dentro dele existem o',
+    'arquivo mimetype sem compressão, o catálogo content.opf com os metadados, o',
+    'sumário nav.xhtml, a pasta images/ com as figuras e cada capítulo em XHTML.'
+  ];
+  for (const l of p2a) { doc.text(l, 56, y); y += 16; }
+  y += 12;
+  const p2b = [
+    'Abra a aba Prévia de Leitura logo abaixo para conferir os parágrafos bem',
+    'definidos, os diálogos separados e o diagrama extraído do PDF!'
+  ];
+  for (const l of p2b) { doc.text(l, 56, y); y += 16; }
+  doc.setFontSize(9);
+  doc.text('2', 297, 810, { align: 'center' });
+
+  // Página 3
+  doc.addPage();
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.text('Folio - Documento de Exemplo', 56, 36);
+  doc.setFont('times', 'bold'); doc.setFontSize(22);
+  doc.text('Capítulo 3: Pronto para o Seu Documento', 56, 92);
+  doc.setFont('times', 'normal'); doc.setFontSize(12);
+  doc.text('Agora você pode soltar seu próprio PDF acima e convertê-lo para EPUB, DOCX,', 56, 132);
+  doc.text('Markdown, HTML, RTF ou TXT com imagens e parágrafos preservados.', 56, 148);
+  doc.setFontSize(9);
+  doc.text('3', 297, 810, { align: 'center' });
+
+  return new File([doc.output('blob')], 'exemplo_guia_conversao.pdf', { type: 'application/pdf' });
+}
+
+function createSampleMarkdownFile() {
+  const md = `# Manual de Arquitetura de Conversores
+
+Este documento em **Markdown** demonstra como a *Representação Intermediária (IR)* permite gerar EPUB 3, PDF, DOCX, HTML, RTF e TXT a partir de uma única fonte.
+
+## Capítulo 1: Por que usar um modelo intermediário?
+
+Sem um modelo intermediário, converter entre 7 formatos exigiria **42 conversores independentes**. Com um modelo canônico:
+
+- Escrevemos apenas **7 leitores (parsers)**
+- Escrevemos apenas **7 escritores (writers)**
+- Total: **14 módulos** cobrindo todas as 42 combinações.
+
+## Capítulo 2: Precisão Tipográfica
+
+> "Um bom conversor de documentos não apenas copia caracteres — ele preserva a hierarquia semântica do texto."
+
+Experimente converter este arquivo para **EPUB** e depois transformar o EPUB gerado em **DOCX** ou **PDF**.`;
+  return new File([new Blob([md], { type: 'text/markdown' })], 'manual_arquitetura.md', { type: 'text/markdown' });
+}
+
+/* ============================================================================
+   UI / RENDERIZAÇÃO
+   ============================================================================ */
+function updateHeroAndCards() {
+  const src = document.getElementById('globalSource').value;
+  const dst = document.getElementById('globalTarget').value;
+  document.getElementById('srcIcon').innerHTML = SVG_ICONS[src];
+  document.getElementById('dstIcon').innerHTML = SVG_ICONS[dst];
+  document.getElementById('heroTitle').innerHTML = `${FORMATS[src].label} para <span class="muted-grad">${FORMATS[dst].label}.</span>`;
+
+  document.getElementById('formatInfoCards').innerHTML = [src, dst].map((key, idx) => `
+    <article class="info-bento">
+      <div class="bento-kicker">
+        <div class="bento-icon">${SVG_ICONS[key]}</div>
+        <div>
+          <h3>${FORMATS[key].label}</h3>
+          <div class="sub-tag">${idx === 0 ? 'Formato de origem' : 'Formato de destino'}</div>
+        </div>
+      </div>
+      <p>${FORMATS[key].desc}</p>
+    </article>
+  `).join('');
+}
+
+function addFilesToQueue(fileList) {
+  const globalTarget = document.getElementById('globalTarget').value;
+  for (const file of fileList) {
+    const srcFmt = detectFormatFromName(file.name);
+    let dstFmt = globalTarget;
+    if (dstFmt === srcFmt) dstFmt = srcFmt === 'epub' ? 'pdf' : 'epub';
+
+    document.getElementById('globalSource').value = srcFmt;
+    document.getElementById('globalTarget').value = dstFmt;
+    updateHeroAndCards();
+
+    const job = {
+      id: 'job_' + Date.now() + '_' + Math.random().toString(16).slice(2, 7),
+      file, name: file.name, size: file.size, srcFmt, dstFmt,
+      status: 'ready',
+      progress: 0,
+      stageIdx: 0,
+      startedAt: null,
+      elapsedSec: null,
+      progressDetail: `Pronto · ${srcFmt.toUpperCase()} → ${dstFmt.toUpperCase()} (${formatBytes(file.size)})`,
+      log: [`Arquivo pronto: ${file.name} (${formatBytes(file.size)}) · ${srcFmt.toUpperCase()} → ${dstFmt.toUpperCase()}`],
+      ir: null, outputBlob: null,
+      outputName: `${stripExt(file.name)}.${dstFmt}`,
+      error: null
+    };
+    state.jobs.push(job);
+    state.activeJobId = job.id;
+  }
+  renderQueue();
+  renderInspector();
+}
+
+function renderQueue() {
+  const sec = document.getElementById('queueSection');
+  const list = document.getElementById('queueList');
+  document.getElementById('queueCount').textContent = state.jobs.length;
+  sec.classList.toggle('has-items', state.jobs.length > 0);
+
+  list.innerHTML = state.jobs.map(job => {
+    const statusMap = {
+      ready:   ['status-ready', 'Pronto'],
+      working: ['status-working', 'Convertendo…'],
+      done:    ['status-done', 'Concluído'],
+      error:   ['status-error', 'Erro']
+    };
+    const [cls, label] = statusMap[job.status];
+    const targetOptions = FORMAT_KEYS.filter(k => k !== job.srcFmt)
+      .map(k => `<option value="${k}" ${k === job.dstFmt ? 'selected' : ''}>${FORMATS[k].short}</option>`)
+      .join('');
+
+    return `
+      <div class="job-row ${job.id === state.activeJobId ? 'selected' : ''}">
+        <div class="job-badge-sq">${FORMATS[job.srcFmt].short}</div>
+        <div class="job-info" onclick="selectJob('${job.id}')">
+          <div class="job-name">${escapeXml(job.name)}</div>
+          <div class="job-meta">${formatBytes(job.size)} · ${job.srcFmt.toUpperCase()} → ${job.dstFmt.toUpperCase()}${job.outputBlob ? ' · Saída ' + formatBytes(job.outputBlob.size) : ''}</div>
+          <div class="job-mini-track ${job.status === 'working' || job.status === 'done' || job.status === 'error' ? 'visible' : ''}" id="miniTrack_${job.id}">
+            <div class="job-mini-fill ${job.status === 'done' ? 'done' : (job.status === 'error' ? 'error' : '')}" id="miniFill_${job.id}" style="width:${Math.round(job.progress || 0)}%"></div>
+          </div>
+        </div>
+        <select class="job-target-select" onchange="changeJobTarget('${job.id}', this.value)" ${job.status === 'working' ? 'disabled' : ''}>
+          ${targetOptions}
+        </select>
+        <span class="status-pill ${cls}" id="statusPill_${job.id}">${job.status === 'working' ? Math.round(job.progress || 0) + '%' : label}</span>
+        <div class="btn-row" style="justify-content:flex-end;gap:6px">
+          ${job.status === 'done'
+            ? `<button class="btn btn-success btn-sm" onclick="downloadJob('${job.id}')">${SVG_ICONS.dl} Baixar</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="convertSingleJob('${job.id}')" ${job.status === 'working' ? 'disabled' : ''}>Converter</button>`
+          }
+          <button class="btn btn-icon-only" onclick="removeJob('${job.id}')" title="Remover">${SVG_ICONS.x}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderInspector() {
+  const card = document.getElementById('inspectorCard');
+  const body = document.getElementById('inspectorBody');
+  const job = state.jobs.find(j => j.id === state.activeJobId);
+  if (!job) { card.classList.remove('visible'); return; }
+  card.classList.add('visible');
+  syncProgressDock(job);
+
+  if (state.activeInspTab === 'log') {
+    body.innerHTML = `<div class="pipeline-log">${escapeXml(job.log.join('\n'))}</div>`;
+  } else if (state.activeInspTab === 'preview') {
+    if (!job.ir) {
+      body.innerHTML = `<p style="color:var(--text-muted);font-size:14px;text-align:center;padding:24px 0">Execute a conversão para abrir a prévia de leitura estilo Apple Books.</p>`;
+    } else {
+      const html = job.ir.chapters.map(c => `<div style="margin-bottom:24px">${inlineImagesForBrowser(c.html, job.ir.images)}</div>`).join('<hr style="margin:28px 0;border:none;border-top:1px solid var(--border)"/>');
+      body.innerHTML = `<div class="preview-ebook">${html}</div>`;
+    }
+  } else if (state.activeInspTab === 'ast') {
+    if (!job.ir) {
+      body.innerHTML = `<p style="color:var(--text-muted);font-size:14px;text-align:center;padding:24px 0">Execute a conversão para inspecionar a Representação Intermediária (IR).</p>`;
+    } else {
+      const summary = {
+        metadata: { title: job.ir.title, author: job.ir.author, lang: job.ir.lang },
+        stats: job.ir.stats,
+        chapters: job.ir.chapters.map(c => ({
+          id: c.id, title: c.title,
+          characters: c.html.replace(/<[^>]+>/g, '').length,
+          htmlPreview: c.html.slice(0, 220) + (c.html.length > 220 ? '...' : '')
+        }))
+      };
+      body.innerHTML = `<div class="pipeline-log">${escapeXml(JSON.stringify(summary, null, 2))}</div>`;
+    }
+  }
+}
+
+function renderMatrix() {
+  const table = document.getElementById('matrixTable');
+  let html = `<thead><tr><th>DE \\ PARA</th>${FORMAT_KEYS.map(k => `<th>${FORMATS[k].short}</th>`).join('')}</tr></thead><tbody>`;
+  for (const src of FORMAT_KEYS) {
+    html += `<tr><th>${FORMATS[src].label}</th>`;
+    for (const dst of FORMAT_KEYS) {
+      html += src === dst
+        ? `<td class="cell-self">—</td>`
+        : `<td class="cell-ok" onclick="pickPairFromMatrix('${src}','${dst}')" title="Usar ${src.toUpperCase()} → ${dst.toUpperCase()}">✓</td>`;
+    }
+    html += `</tr>`;
+  }
+  table.innerHTML = html + `</tbody>`;
+}
+
+window.selectJob = (id) => { state.activeJobId = id; renderQueue(); renderInspector(); };
+window.changeJobTarget = (id, val) => {
+  const job = state.jobs.find(j => j.id === id);
+  if (job) { job.dstFmt = val; job.status = 'ready'; job.outputBlob = null; renderQueue(); }
+};
+window.convertSingleJob = (id) => { const j = state.jobs.find(x => x.id === id); if (j) runJobConversion(j); };
+window.downloadJob = (id) => { const j = state.jobs.find(x => x.id === id); if (j && j.outputBlob) downloadBlob(j.outputBlob, j.outputName); };
+window.removeJob = (id) => {
+  state.jobs = state.jobs.filter(j => j.id !== id);
+  if (state.activeJobId === id) state.activeJobId = state.jobs[0] ? state.jobs[0].id : null;
+  renderQueue(); renderInspector();
+};
+window.pickPairFromMatrix = (src, dst) => {
+  document.getElementById('globalSource').value = src;
+  document.getElementById('globalTarget').value = dst;
+  updateHeroAndCards();
+  switchView('converter');
+};
+
+function switchView(viewName, updateHash = true) {
+  if (!['converter', 'matrix', 'architecture'].includes(viewName)) viewName = 'converter';
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+  document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.id === 'view-' + viewName));
+  if (updateHash && history.replaceState) {
+    history.replaceState(null, '', viewName === 'converter' ? location.pathname + location.search : '#' + viewName);
+  }
+}
+
+function syncViewFromHash() {
+  const h = (location.hash || '').replace(/^#/, '').toLowerCase();
+  if (h === 'matrix' || h === 'matriz') switchView('matrix', false);
+  else if (h === 'architecture' || h === 'arquitetura') switchView('architecture', false);
+  else if (h === 'converter' || h === 'conversor' || h === 'tools') switchView('converter', false);
+}
+window.addEventListener('hashchange', syncViewFromHash);
+
+async function checkPythonEngine() {
+  const isLocalHost = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!isLocalHost) {
+    // Em produção (GitHub Pages), oculta o seletor de motor Python local para uma interface 100% limpa
+    const sel = document.getElementById('engineMode');
+    const lbl = document.getElementById('engineStaticLabel');
+    if (sel) sel.style.display = 'none';
+    if (lbl) lbl.style.display = 'inline';
+    return;
+  }
+  try {
+    const resp = await fetch(`${state.pythonServerUrl}/api/health`, { signal: AbortSignal.timeout(1200) });
+    if (resp.ok) {
+      state.pythonServerAvailable = true;
+      const opt = document.getElementById('optPythonEngine');
+      opt.disabled = false;
+      opt.textContent = 'Python PyMuPDF';
+      document.getElementById('engineDot').classList.add('py');
+    }
+  } catch (_) {}
+}
+
+/* ============================================================================
+   EVENT LISTENERS
+   ============================================================================ */
+document.querySelectorAll('.nav-tab').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+document.querySelectorAll('.insp-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.insp-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.activeInspTab = btn.dataset.itab;
+    renderInspector();
+  });
+});
+
+document.getElementById('globalSource').addEventListener('change', updateHeroAndCards);
+document.getElementById('globalTarget').addEventListener('change', updateHeroAndCards);
+document.getElementById('swapFormatsBtn').addEventListener('click', () => {
+  const s = document.getElementById('globalSource');
+  const d = document.getElementById('globalTarget');
+  const tmp = s.value; s.value = d.value; d.value = tmp;
+  updateHeroAndCards();
+});
+document.getElementById('toggleOptionsBtn').addEventListener('click', () => {
+  document.getElementById('optionsPanel').classList.toggle('open');
+});
+
+const fileInput = document.getElementById('fileInput');
+const dropzone = document.getElementById('dropzone');
+document.getElementById('pickFilesBtn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+dropzone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => { if (e.target.files.length) addFilesToQueue(e.target.files); fileInput.value = ''; });
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) addFilesToQueue(e.dataTransfer.files);
+});
+
+document.getElementById('loadSampleBtn').addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const sample = await createSamplePdfFile();
+  document.getElementById('globalTarget').value = 'epub';
+  addFilesToQueue([sample]);
+  runJobConversion(state.jobs[state.jobs.length - 1]);
+});
+document.getElementById('loadMdSampleBtn').addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const sample = createSampleMarkdownFile();
+  document.getElementById('globalTarget').value = 'epub';
+  addFilesToQueue([sample]);
+  runJobConversion(state.jobs[state.jobs.length - 1]);
+});
+document.getElementById('convertAllBtn').addEventListener('click', async () => {
+  for (const job of state.jobs) { if (job.status !== 'done') await runJobConversion(job); }
+});
+document.getElementById('clearQueueBtn').addEventListener('click', () => {
+  state.jobs = []; state.activeJobId = null; renderQueue(); renderInspector();
+});
+
+updateHeroAndCards();
+renderMatrix();
+syncViewFromHash();
+checkPythonEngine();
+</script>
+</body>
+</html>
